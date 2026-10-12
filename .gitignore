@@ -1,0 +1,26 @@
+.env
+.env.*
+!.env.example
+
+# Python cache and environments
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# JavaScript dependencies and build output
+node_modules/
+dist/
+build/
+
+# Local databases, logs, and uploaded files
+*.sqlite
+*.sqlite3
+*.db
+*.log
+uploads/
+
+# Operating system files
+.DS_Store
+Thumbs.db
+Desktop.ini
