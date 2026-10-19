@@ -27,10 +27,6 @@ Desktop.ini
 
 # Append these rules to the repository's existing .gitignore; do not replace its current contents.
 
-# Local environment variables
-.env
-.env.*
-!.env.example
 
 # Local OAuth / Supabase credential files
 client_secret*.json
