@@ -24,3 +24,24 @@ uploads/
 .DS_Store
 Thumbs.db
 Desktop.ini
+
+# Append these rules to the repository's existing .gitignore; do not replace its current contents.
+
+# Local environment variables
+.env
+.env.*
+!.env.example
+
+# Local OAuth / Supabase credential files
+client_secret*.json
+credentials*.json
+*service_role*
+*service-role*
+/secrets/
+
+# Private key files
+*.pem
+*.key
+*.p12
+*.pfx
+
