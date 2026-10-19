@@ -5,13 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#f4f7fb">
   <title>SIFS | 학교생활을 한곳에서</title>
-  <style>
-    :root{--blue:#3268ed;--blue-dark:#214bba;--ink:#202c40;--muted:#8290a7;--line:#e6ebf3;--panel:#fff;--canvas:#f3f6fa;--pale:#edf3ff;--green:#1d9d78;--orange:#c47a23;--shadow:0 2px 8px rgba(28,48,84,.035)}
-    *{box-sizing:border-box}html{min-width:360px;background:var(--canvas)}body{margin:0;color:var(--ink);font-family:Inter,"Noto Sans KR","Malgun Gothic",Arial,sans-serif;font-size:13px;background:var(--canvas)}button,input,select,textarea{font:inherit;color:inherit}button{cursor:pointer}a{color:inherit;text-decoration:none}.app{min-height:100vh}.sidebar{position:fixed;z-index:5;inset:0 auto 0 0;width:170px;background:#fff;border-right:1px solid var(--line);padding:24px 18px 18px;display:flex;flex-direction:column}.brand{font-size:24px;line-height:1;font-weight:800;letter-spacing:-1px;color:var(--blue);margin:6px 10px 8px}.brand-sub{font-size:9px;color:#8b98ad;margin:0 10px 27px}.school-switch{height:38px;width:100%;border:0;background:#f6f8fc;border-radius:9px;text-align:left;padding:0 10px;font-weight:700;font-size:11px;margin-bottom:16px}.school-switch span{color:var(--blue);font-size:15px;margin-right:5px}.nav{display:grid;gap:6px}.nav button{height:38px;border:0;background:transparent;border-radius:8px;text-align:left;padding:0 10px;color:#667791;font-size:12px}.nav button .nav-icon{display:inline-block;width:21px;font-size:15px}.nav button:hover,.nav button.active{background:#edf3ff;color:var(--blue);font-weight:700}.side-divider{height:1px;background:var(--line);margin:17px 0 20px}.side-caption{font-size:9px;color:#98a4b8;margin:0 9px 12px}.source-links{display:grid;gap:10px;padding-left:9px}.source-links a{font-size:10px;color:#8a97ac}.source-links a:before{content:"•";color:var(--blue);font-size:14px;margin-right:7px}.side-bottom{margin-top:auto;font-size:9px;color:#9aa6b8;line-height:2.1;padding:0 9px}.topbar{height:60px;position:fixed;z-index:4;left:170px;right:0;top:0;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 27px}.term{font-size:11px;font-weight:700}.term small{font-weight:400;color:var(--muted);margin-left:9px}.top-right{display:flex;align-items:center;gap:13px;color:#8794aa;font-size:10px}.avatar{width:25px;height:25px;border-radius:50%;display:grid;place-items:center;background:#e9f0ff;color:var(--blue);font-weight:700}.user-name{font-size:11px;color:#39475d;font-weight:600}.content{margin-left:170px;padding:83px 26px 28px;max-width:1600px}.page-heading{margin:0 0 18px}.eyebrow{color:var(--blue);font-size:10px;margin:0 0 7px}.page-heading h1{font-size:23px;line-height:1.3;letter-spacing:-.6px;margin:0 0 6px}.page-heading p{font-size:11px;color:var(--muted);margin:0}.searchbox{height:48px;background:#fff;border:1.5px solid var(--blue);border-radius:10px;display:flex;align-items:center;padding:6px 7px 6px 15px;gap:10px;margin-bottom:12px}.searchbox .search-icon{font-size:19px;color:var(--blue)}.searchbox input{border:0;outline:0;flex:1;min-width:0;font-size:12px}.primary,.outline,.subtle{border-radius:7px;padding:9px 13px;border:1px solid var(--line);background:#fff;font-size:11px}.primary{background:var(--blue);border-color:var(--blue);color:white;font-weight:700}.primary:hover{background:var(--blue-dark)}.outline:hover,.subtle:hover{border-color:#aac0fa;color:var(--blue)}.filter-row{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin:11px 0 13px}.chip{height:29px;padding:0 13px;border-radius:18px;border:1px solid var(--line);background:#fff;color:#687792;font-size:10px}.chip.active{color:#fff;background:#1e355e;border-color:#1e355e}.layout-search{display:grid;grid-template-columns:minmax(0,1fr) 240px;gap:18px;align-items:start}.card{background:var(--panel);border:1px solid var(--line);border-radius:11px;box-shadow:var(--shadow)}.results-card{padding:12px 17px}.result-count{height:29px;border-bottom:1px solid var(--line);font-size:10px;font-weight:700}.result-count b{color:var(--blue)}.sort-row{height:36px;display:flex;justify-content:flex-end;align-items:center}.sort-select{border:0;background:transparent;color:#667791;font-size:10px}.post-row{position:relative;min-height:83px;padding:12px 27px 12px 1px;border-bottom:1px solid var(--line);cursor:pointer}.post-row:last-of-type{border-bottom:0}.post-row:hover h3{color:var(--blue)}.post-row h3{font-size:13px;margin:5px 0 5px;letter-spacing:-.2px}.post-row p{font-size:10px;color:#687891;margin:0 0 5px;line-height:1.45}.post-meta{font-size:9px;color:#95a1b5}.post-arrow{position:absolute;right:3px;top:38px;color:#7889a4;font-size:16px}.post-thumb{float:right;width:76px;height:56px;object-fit:cover;border-radius:7px;margin:1px 8px 2px 16px}.tag{display:inline-flex;align-items:center;height:19px;padding:0 7px;border-radius:5px;background:#edf3ff;color:var(--blue);font-size:9px;margin-right:4px}.tag.green{background:#e8f7f1;color:var(--green)}.tag.orange{background:#fff4e6;color:var(--orange)}.tag.gray{background:#f0f3f7;color:#66758d}.right-stack{display:grid;gap:12px}.side-card{padding:15px}.side-card h2{font-size:13px;margin:0 0 13px}.side-card p{font-size:10px;color:#8b98ad;line-height:1.6;margin:8px 0}.upcoming-item{padding:10px 0;border-top:1px solid var(--line)}.upcoming-item:first-of-type{border-top:0}.upcoming-item strong{display:block;font-size:11px;margin:6px 0}.upcoming-item small{font-size:9px;color:var(--muted)}.dday{display:inline-block;padding:4px 6px;border-radius:5px;background:#edf3ff;color:var(--blue);font-size:9px;font-weight:700}.blue-panel{background:#edf3ff;border-color:#edf3ff}.blue-panel .primary{margin-top:5px}.source-explain{display:grid;gap:10px}.source-explain b{font-size:10px}.source-explain span{display:block;color:var(--muted);font-size:9px;line-height:1.5;margin-top:4px}.pagination{display:flex;justify-content:center;gap:13px;padding:15px 0 2px;font-size:10px}.pagination button{border:0;background:none;color:#60718c}.pagination button.active{color:var(--blue);font-weight:700}.empty-state{text-align:center;padding:60px 18px;color:var(--muted)}.empty-state strong{display:block;color:var(--ink);font-size:14px;margin-bottom:7px}.two-col{display:grid;grid-template-columns:minmax(0,1fr) 270px;gap:18px;align-items:start}.form-card{padding:18px 20px}.form-card h2{font-size:14px;margin:0;padding-bottom:12px;border-bottom:1px solid var(--line)}.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px 14px;margin-top:14px}.field{display:grid;gap:6px}.field.full{grid-column:1/-1}.field label{font-weight:600;font-size:10px}.field label em{font-style:normal;color:#9aa6b8;font-weight:400}.field input,.field select,.field textarea{width:100%;border:1px solid #dfe6f0;border-radius:7px;padding:10px 11px;background:#fff;outline:0;font-size:11px}.field input:focus,.field select:focus,.field textarea:focus{border-color:#7fa1fa;box-shadow:0 0 0 3px #edf3ff}.field textarea{min-height:150px;resize:vertical;line-height:1.7}.file-drop{border:1px dashed #d6e0ef;background:#fafcff;border-radius:8px;padding:13px;display:flex;align-items:center;justify-content:space-between;color:#8b98ad;font-size:10px}.file-list{margin-top:8px;display:flex;gap:8px;flex-wrap:wrap}.file-pill{padding:5px 8px;background:#f1f5fa;border-radius:6px;color:#5f6e84;font-size:9px}.form-actions{display:flex;justify-content:flex-end;gap:8px;padding-top:14px;margin-top:14px;border-top:1px solid var(--line)}.author-avatar{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:#edf3ff;color:var(--blue);font-weight:700}.author-row{display:flex;gap:10px;align-items:center}.author-row strong{font-size:11px}.author-row small{display:block;font-size:9px;color:var(--muted);margin-top:4px}.tip-list{display:grid;gap:14px}.tip-list div{font-size:10px;font-weight:600}.tip-list span{display:block;font-weight:400;color:var(--muted);font-size:9px;line-height:1.5;margin:5px 0 0 23px}.detail-back{display:flex;justify-content:space-between;color:#77869d;font-size:10px;margin-bottom:13px}.detail-layout{display:grid;grid-template-columns:minmax(0,1fr) 270px;gap:18px;align-items:start}.article{padding:20px 23px}.article h1{font-size:21px;letter-spacing:-.6px;margin:11px 0}.article-meta{font-size:10px;color:#8290a7;padding-bottom:15px;border-bottom:1px solid var(--line)}.due-banner{margin:12px 0;background:#edf3ff;border-radius:8px;padding:12px 14px;display:flex;justify-content:space-between;align-items:center}.due-banner b{display:block;font-size:12px;margin-top:4px}.article-body{font-size:11px;line-height:1.8;white-space:pre-wrap;margin:16px 0}.hero-image{width:100%;height:190px;border-radius:8px;object-fit:cover;background:linear-gradient(135deg,#dce5d9,#a9c1c4 48%,#edf0e7);display:block}.attachment{display:flex;justify-content:space-between;align-items:center;border:1px solid var(--line);border-radius:7px;padding:11px;margin:12px 0;font-size:10px}.source-row{display:flex;align-items:center;gap:9px;font-size:11px;font-weight:700}.source-dot{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:#edf3ff;color:var(--blue)}.subtle-link{color:var(--blue);font-size:10px;background:none;border:0;padding:7px 0}.week-card{padding:16px}.week-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}.week-top h2{font-size:14px;margin:0}.week-grid{display:grid;grid-template-columns:48px repeat(5,minmax(80px,1fr));border:1px solid var(--line);border-radius:8px;overflow:hidden}.week-cell{min-height:39px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);display:grid;place-items:center;text-align:center;padding:4px;font-size:9px;background:#fff}.week-cell.head{background:#f7f9fc;color:#667791;font-size:10px;height:32px}.week-cell.time{background:#fafbfd;color:#60708a;font-weight:600}.week-cell.this-day{background:#edf3ff;color:var(--blue)}.week-cell.course{font-size:9px}.week-cell.course.has-course{color:#2c63dc;background:#f4f7ff;font-weight:600}.week-cell:nth-child(6n){border-right:0}.schedule-controls{display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:8px;margin-top:13px}.schedule-controls input,.schedule-controls select{min-width:0;border:1px solid #dfe6f0;border-radius:7px;padding:9px;font-size:10px;background:#fff}.schedule-note{font-size:9px;color:var(--muted);margin:10px 0 0}.profile-summary{display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--line);padding-bottom:12px;margin-bottom:11px}.profile-big{width:42px;height:42px;border-radius:50%;background:#edf3ff;display:grid;place-items:center;color:var(--blue);font-size:15px;font-weight:700}.profile-form{display:grid;gap:8px}.profile-form input{width:100%;border:1px solid #dfe6f0;border-radius:6px;padding:8px;font-size:10px}.assignment{display:grid;grid-template-columns:38px 1fr;gap:9px;border-top:1px solid var(--line);padding:12px 0}.assignment-date{text-align:center;font-size:17px;font-weight:700}.assignment-date small{display:block;font-size:9px;color:var(--muted);font-weight:400}.assignment strong{display:block;font-size:10px;margin:6px 0}.assignment small{font-size:9px;color:var(--muted)}.page-hidden{display:none!important}.toast{position:fixed;z-index:20;bottom:22px;left:50%;transform:translateX(-50%);background:#24334d;color:#fff;border-radius:8px;padding:11px 15px;font-size:11px;box-shadow:0 8px 26px #1a2a451f}.modal-backdrop{position:fixed;inset:0;z-index:15;background:#17243c55;display:grid;place-items:center;padding:18px}.modal{background:white;padding:22px;border-radius:12px;width:min(400px,100%);box-shadow:0 18px 50px #15223a30}.modal h2{margin:0 0 8px;font-size:16px}.modal p{font-size:11px;line-height:1.6;color:var(--muted)}.modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:15px}.notice{padding:10px 12px;background:#fff7e9;color:#98601f;border-radius:7px;font-size:10px;line-height:1.5}.detail-actions{display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--line);padding-top:12px;margin-top:13px;color:var(--muted);font-size:9px}.mobile-menu{display:none}
-    @media(max-width:1050px){.layout-search{grid-template-columns:minmax(0,1fr) 220px}.detail-layout,.two-col{grid-template-columns:minmax(0,1fr) 240px}.content{padding-left:18px;padding-right:18px}.sidebar{width:158px}.topbar{left:158px}.content{margin-left:158px}}
-    @media(max-width:760px){.sidebar{width:58px;padding:16px 7px}.brand{font-size:17px;margin:5px 4px}.brand-sub,.school-switch,.side-divider,.side-caption,.source-links,.side-bottom{display:none}.nav{margin-top:18px}.nav button{padding:0;text-align:center;font-size:0}.nav button .nav-icon{font-size:17px;width:auto}.topbar{left:58px;padding:0 12px}.top-right{gap:7px}.top-right .date-label{display:none}.content{margin-left:58px;padding:76px 12px 20px}.page-heading h1{font-size:20px}.layout-search,.detail-layout,.two-col{grid-template-columns:1fr}.right-stack{grid-template-columns:1fr 1fr}.right-stack .blue-panel{grid-column:1/-1}.schedule-controls{grid-template-columns:1fr 1fr}.schedule-controls button{grid-column:1/-1}.week-grid{grid-template-columns:34px repeat(5,minmax(53px,1fr));overflow-x:auto}.week-cell{font-size:8px;padding:3px;min-height:37px}.week-cell.head{font-size:8px}.article{padding:16px}.form-card{padding:15px}.form-grid{grid-template-columns:1fr}.field.full{grid-column:auto}.right-stack .side-card{padding:12px}.post-row h3{font-size:12px}}
-    @media(max-width:480px){.term{font-size:9px}.term small{display:none}.user-name{display:none}.content{padding-left:9px;padding-right:9px}.right-stack{grid-template-columns:1fr}.right-stack .blue-panel{grid-column:auto}.searchbox{padding-left:10px}.searchbox input{font-size:10px}.filter-row{gap:5px}.chip{padding:0 10px}.results-card{padding:10px}.week-card{padding:10px}.post-thumb{width:58px;height:47px}}
-  </style>
+  <link rel="stylesheet" href="./styles.css">
 </head>
 <body>
 <div class="app">
@@ -27,7 +21,7 @@
     <div class="source-links"><a href="https://riroschool.kr" target="_blank" rel="noreferrer">리로스쿨</a><a href="https://seohyun-h.goesn.kr/seohyun-h/main.do" target="_blank" rel="noreferrer">학교 홈페이지</a><a href="https://classroom.google.com" target="_blank" rel="noreferrer">Google Classroom</a></div>
     <div class="side-bottom">도움말 · 의견 보내기<br>SIFS · 학생을 위한 학교 정보</div>
   </aside>
-  <header class="topbar"><div class="term">2026학년도 2학기 <small>학생 공간 · 로컬 베타</small></div><div class="top-right"><span class="date-label" id="todayLabel"></span><span>♧</span><span class="avatar" id="topAvatar">서연</span><span class="user-name" id="topName">김서연</span><span>⌄</span></div></header>
+  <header class="topbar"><div class="term">2026학년도 2학기 <small>학생 공간 · Supabase 연결</small></div><div class="top-right"><span class="date-label" id="todayLabel"></span><button class="outline" data-edit-profile type="button">내 정보</button><button class="outline" id="authButton" type="button">로그인</button><span class="avatar" id="topAvatar">서연</span><span class="user-name" id="topName">김서연</span></div></header>
   <main class="content">
     <section id="searchView">
       <div class="page-heading"><div class="eyebrow">우리 학교의 모든 소식</div><h1>찾던 학교 정보, 이제 한곳에서.</h1><p>학교 공지부터 우리 반 수행평가까지, 여러 곳의 소식을 모아 확인하세요.</p></div>
@@ -36,16 +30,16 @@
       <div class="filter-row" id="categoryRow"><button class="chip active" data-category="전체">전체</button><button class="chip" data-category="학교 공지">학교 공지</button><button class="chip" data-category="수행평가">수행평가</button><button class="chip" data-category="행사">행사</button><button class="chip" data-category="가정통신문">가정통신문</button></div>
       <div class="layout-search">
         <section class="card results-card"><div class="result-count" id="resultCount"></div><div class="sort-row"><label style="font-size:10px;color:#8492a8">☷</label><select class="sort-select" id="sortSelect" aria-label="정렬"><option value="newest">최신순</option><option value="oldest">오래된 순</option></select></div><div id="postList"></div><div class="pagination"><button type="button">‹</button><button type="button" class="active">1</button><button type="button">2</button><button type="button">3</button><button type="button">4</button><button type="button">›</button></div></section>
-        <aside class="right-stack"><section class="card side-card"><h2>다가오는 내 일정</h2><p><span class="tag">2학년 3반</span> 김서연</p><div id="upcomingList"></div><button class="subtle-link" data-go="timetable">내 시간표와 일정 보기 →</button></section><section class="card side-card"><h2>정보의 출처를 확인하세요</h2><div class="source-explain"><div><b><span class="tag green">예시 정보</span></b><span>학교 홈페이지와 공지 출처를 참고한 데모 게시글이에요.</span></div><div><b><span class="tag orange">직접 등록</span></b><span>이 브라우저에서 작성하고 저장한 정보예요.</span></div></div><div style="display:flex;gap:6px;margin-top:12px"><button class="outline" id="importButton" type="button">JSON 가져오기</button><button class="outline" id="exportButton" type="button">백업 내보내기</button><input id="importInput" type="file" accept="application/json,.json" hidden></div></section><section class="card side-card blue-panel"><div style="font-size:17px;color:var(--blue);margin-bottom:8px">＋</div><h2>알고 있는 소식이 있나요?</h2><p>사진과 함께 공유하면 친구들에게 큰 도움이 돼요.</p><button class="primary" data-go="register">＋ 정보 등록하기</button></section></aside>
+        <aside class="right-stack"><section class="card side-card"><h2>다가오는 내 일정</h2><p><span class="tag">2학년 3반</span> 김서연</p><div id="upcomingList"></div><button class="subtle-link" data-go="timetable">내 시간표와 일정 보기 →</button></section><section class="card side-card"><h2>정보의 출처를 확인하세요</h2><div class="source-explain"><div><b><span class="tag green">예시 정보</span></b><span>학교 홈페이지와 공지 출처를 참고한 데모 게시글이에요.</span></div><div><b><span class="tag orange">직접 등록</span></b><span>이 브라우저에서 작성하고 저장한 정보예요.</span></div></div><p style="font-size:9px;color:var(--muted);line-height:1.5;margin:12px 0 8px">게시글·이미지, 시간표, 프로필(이름·학번·학년·반)을 저장합니다. 전체 백업 파일에는 학번이 포함되니 공유에 주의하세요.</p><div style="display:flex;gap:6px;flex-wrap:wrap"><button class="outline" id="importButton" type="button">전체 백업 가져오기</button><button class="outline" id="exportButton" type="button">전체 백업 내보내기</button><input id="importInput" type="file" accept="application/json,.json" hidden></div></section><section class="card side-card blue-panel"><div style="font-size:17px;color:var(--blue);margin-bottom:8px">＋</div><h2>알고 있는 소식이 있나요?</h2><p>사진과 함께 공유하면 친구들에게 큰 도움이 돼요.</p><button class="primary" data-go="register">＋ 정보 등록하기</button></section></aside>
       </div>
     </section>
     <section id="timetableView" class="page-hidden">
       <div class="page-heading"><div class="eyebrow">나의 학교생활</div><h1 id="personalGreeting">서연님의 한 주를 한눈에.</h1><p>내 학급에 맞는 시간표와 놓치면 안 되는 수행평가를 확인하세요.</p></div>
       <div class="two-col"><div>
-        <section class="card side-card" style="margin-bottom:16px"><div class="profile-summary"><div class="profile-big" id="profileAvatar">서연</div><div><strong id="profileName">김서연</strong> <span class="tag">학생</span><small id="profileClass" style="display:block;color:var(--muted);font-size:9px;margin-top:5px">한빛고등학교 · 2학년 3반</small></div><button class="outline" style="margin-left:auto">정보 수정</button></div><div style="font-size:9px;color:#64806e">● 로컬 베타 프로필 <span style="color:var(--muted)">이 기기의 브라우저에만 저장됩니다.</span></div></section>
-        <section class="card week-card"><div class="week-top"><div><h2>우리 반 시간표</h2><small style="color:var(--muted);font-size:9px">2026년 10월 12일 시작 주 · 과목을 직접 설정할 수 있어요.</small></div><span class="tag" id="classTag">2학년 3반</span></div><div id="weekGrid" class="week-grid"></div><div class="schedule-controls"><input id="courseInput" maxlength="24" placeholder="과목 이름"><select id="dayInput" aria-label="요일"><option value="1">월요일</option><option value="2">화요일</option><option value="3">수요일</option><option value="4">목요일</option><option value="5">금요일</option></select><select id="periodInput" aria-label="교시"><option value="1">1교시</option><option value="2">2교시</option><option value="3">3교시</option><option value="4">4교시</option><option value="5">5교시</option><option value="6">6교시</option><option value="7">7교시</option></select><button id="addCourseButton" class="primary" type="button">과목 추가</button><button id="deleteCourseButton" class="outline page-hidden" type="button">과목 삭제</button></div><p class="schedule-note">시간표 칸을 눌러 과목을 수정하거나 삭제할 수 있어요. 선택한 과목은 이 기기의 브라우저에 저장됩니다.</p></section>
+        <section class="card side-card" style="margin-bottom:16px"><div class="profile-summary"><div class="profile-big" id="profileAvatar">서연</div><div><strong id="profileName">김서연</strong> <span class="tag">학생</span><small id="profileStudentId" style="display:block;color:var(--muted);font-size:9px;margin-top:5px">학번 미설정</small><small id="profileClass" style="display:block;color:var(--muted);font-size:9px;margin-top:3px">한빛고등학교 · 2학년 3반</small></div><button class="outline" style="margin-left:auto" data-edit-profile>이름·학번 수정</button></div><div style="font-size:9px;color:#64806e">● Supabase 계정 동기화 <span style="color:var(--muted)">로그인하면 다른 기기에서도 불러옵니다.</span></div></section>
+        <section class="card week-card"><div class="week-top"><div><h2>우리 반 시간표</h2><small style="color:var(--muted);font-size:9px">2026년 10월 12일 시작 주 · 과목을 직접 설정할 수 있어요.</small></div><span class="tag" id="classTag">2학년 3반</span></div><div id="weekGrid" class="week-grid"></div><div class="schedule-controls"><input id="courseInput" maxlength="24" placeholder="과목 이름"><select id="dayInput" aria-label="요일"><option value="1">월요일</option><option value="2">화요일</option><option value="3">수요일</option><option value="4">목요일</option><option value="5">금요일</option></select><select id="periodInput" aria-label="교시"><option value="1">1교시</option><option value="2">2교시</option><option value="3">3교시</option><option value="4">4교시</option><option value="5">5교시</option><option value="6">6교시</option><option value="7">7교시</option></select><button id="addCourseButton" class="primary" type="button">과목 추가</button><button id="deleteCourseButton" class="outline page-hidden" type="button">과목 삭제</button></div><p class="schedule-note">시간표 칸을 눌러 과목을 수정하거나 삭제할 수 있어요. 로그인하면 시간표가 계정에 동기화됩니다.</p></section>
         <section class="card side-card blue-panel" style="margin-top:14px"><strong>오늘 확인할 시간표</strong><p id="todayCourseSummary">시간표에서 오늘 수업을 확인해 보세요.</p></section>
-      </div><aside class="right-stack"><section class="card side-card"><h2>학생 정보 연결</h2><p>이 베타에서는 학교 학번 파일이나 Google 계정 연결 없이, 기기 내 프로필로 개인 시간표를 저장합니다.</p><span class="tag green">로컬 프로필</span></section><section class="card side-card"><h2>다가오는 수행평가</h2><p>선택한 과목의 마감일을 모아 보여드려요.</p><div id="timetableAssignments"></div></section><section class="card side-card"><h2>내 학급 정보 기준</h2><p>프로필의 이름과 학급은 이 브라우저에만 저장됩니다. 실제 계정 로그인이나 기기 간 동기화는 포함하지 않습니다.</p><button class="subtle-link" id="editProfileButton">프로필 편집 →</button></section></aside></div>
+      </div><aside class="right-stack"><section class="card side-card"><h2>학생 정보 연결</h2><p>이름과 학번을 직접 설정하면 로그인한 계정에 저장되어 다른 기기에서도 동기화됩니다. 학번은 본인 프로필에만 보입니다.</p><span class="tag green">계정 프로필</span></section><section class="card side-card"><h2>다가오는 수행평가</h2><p>선택한 과목의 마감일을 모아 보여드려요.</p><div id="timetableAssignments"></div></section><section class="card side-card"><h2>내 학급 정보 기준</h2><p>프로필의 이름·학번·학급은 로그인 계정에 저장됩니다. 학번은 게시글에 표시되지 않습니다.</p><button class="subtle-link" data-edit-profile>이름·학번 설정 →</button></section></aside></div>
     </section>
     <section id="registerView" class="page-hidden">
       <div class="page-heading"><div class="eyebrow">학생과 선생님이 함께 만드는 소식</div><h1>우리 학교에 소식을 나눠 주세요.</h1><p>수행평가 안내나 학교 행사를 등록해 친구들이 놓치지 않도록 도와주세요.</p></div>
@@ -58,251 +52,14 @@
         <div class="field full"><label for="postBody">내용 *</label><textarea id="postBody" required placeholder="날짜, 장소, 준비물처럼 친구들에게 필요한 내용을 적어 주세요."></textarea></div>
         <div class="field full"><label>이미지 첨부</label><div class="file-drop"><span>♧　이미지를 끌어 놓거나 파일을 선택하세요</span><label class="outline" for="imageInput">파일 선택</label><input id="imageInput" type="file" accept="image/jpeg,image/png,image/webp" multiple hidden></div><div class="file-list" id="fileList"></div><small style="color:var(--muted);font-size:9px">JPG, PNG, WebP · 파일당 최대 500KB · 최대 3장</small></div>
       </div><div class="form-actions"><button class="outline" type="button" data-go="search">취소</button><button class="primary" type="submit">✓ 정보 등록하기</button></div></form></section>
-      <aside class="right-stack"><section class="card side-card"><h2>작성자 정보</h2><div class="author-row"><div class="author-avatar" id="authorAvatar">서연</div><div><strong id="authorName">김서연</strong><small id="authorClass">2학년 3반</small></div></div><span class="tag orange" style="margin-top:10px">기기 내 프로필</span></section><section class="card side-card"><h2>좋은 정보, 이렇게 나눠요</h2><div class="tip-list"><div>▦　일정을 정확하게<span>제출 기한, 행사 날짜와 장소를 함께 적어 주세요.</span></div><div>▧　사진으로 더 쉽게<span>안내문이나 활동 사진을 올리면 내용을 이해하기 쉬워요.</span></div><div>♢　개인정보는 신중하게<span>전화번호나 친구의 얼굴 등은 동의 없이 올리지 마세요.</span></div></div></section><section class="card side-card blue-panel"><strong style="color:var(--blue)">등록한 정보는 어디에 보여요?</strong><p>통합 검색에서 직접 등록한 표시와 함께 보여요. 이 로컬 베타에서는 현재 기기에 저장됩니다.</p></section></aside></div>
+      <aside class="right-stack"><section class="card side-card"><h2>작성자 정보</h2><div class="author-row"><div class="author-avatar" id="authorAvatar">서연</div><div><strong id="authorName">김서연</strong><small id="authorClass">2학년 3반</small></div></div><span class="tag orange" style="margin-top:10px">Supabase 계정</span></section><section class="card side-card"><h2>좋은 정보, 이렇게 나눠요</h2><div class="tip-list"><div>▦　일정을 정확하게<span>제출 기한, 행사 날짜와 장소를 함께 적어 주세요.</span></div><div>▧　사진으로 더 쉽게<span>안내문이나 활동 사진을 올리면 내용을 이해하기 쉬워요.</span></div><div>♢　개인정보는 신중하게<span>전화번호나 친구의 얼굴 등은 동의 없이 올리지 마세요.</span></div></div></section><section class="card side-card blue-panel"><strong style="color:var(--blue)">등록한 정보는 어디에 보여요?</strong><p>게시글과 첨부 이미지는 로그인한 모든 사용자와 공유됩니다. 개인정보를 올리지 마세요.</p></section></aside></div>
     </section>
     <section id="detailView" class="page-hidden"></section>
   </main>
 </div>
 <div id="toast" class="toast page-hidden" role="status"></div>
 <div id="modalRoot"></div>
-<script>
-  const STORAGE_KEYS = { posts: "sifs.beta.posts.v1", timetable: "sifs.beta.timetable.v1", profile: "sifs.beta.profile.v1" };
-  const DAYS = ["", "월", "화", "수", "목", "금"];
-  const CATEGORY_LABELS = { official: "학교 공지", assessment: "수행평가", event: "행사", family: "가정통신문" };
-  const DEFAULT_POSTS = [
-    { id:"demo-assessment-1", category:"assessment", title:"화학 I 산화·환원 실험 보고서 안내", body:"2학년 3반 여러분, 오늘 진행한 산화·환원 실험을 바탕으로 실험 보고서를 작성해 주세요.\n\n보고서에 포함할 내용\n1. 실험 목적과 준비물\n2. 실험 과정 및 관찰 결과\n3. 산화·환원 반응식과 전자 이동 방향\n4. 결과 해석 및 실험을 통해 알게 된 점\n\n제공한 양식에 작성한 뒤 Google Classroom에 제출해 주세요.", author:"박지훈 선생님", createdAt:"2026-10-12T09:10:00", categoryLabel:"수행평가", subject:"화학 I", audience:"2학년 3반", dueAt:"2026-10-15T23:59", sourceName:"Google Classroom", sourceUrl:"https://classroom.google.com", origin:"자동 수집", image:"", attachments:["산화환원_실험보고서_양식.hwp"] },
-    { id:"demo-official-1", category:"official", title:"2학기 중간고사 시험 시간표 및 유의사항", body:"10월 26일~29일 중간고사 일정과 시험실 배치도를 확인해 주세요. 상세 내용은 학교 홈페이지 원문을 확인해 주세요.", author:"교무부", createdAt:"2026-10-12T08:40:00", categoryLabel:"학교 공지", subject:"", audience:"한빛고등학교 전체", dueAt:"", sourceName:"리로스쿨", sourceUrl:"https://seohyun-h.goesn.kr/seohyun-h/main.do", origin:"자동 수집", image:"", attachments:[] },
-    { id:"demo-event-1", category:"event", title:"한빛제 부스 운영팀을 모집합니다", body:"우리 반의 아이디어를 축제로! 부스 기획안을 10월 16일까지 보내 주세요.\n\n관심 있는 친구는 담임 선생님께 알려 주세요.", author:"학생회", createdAt:"2026-10-11T16:20:00", categoryLabel:"행사", subject:"", audience:"한빛고등학교 전체", dueAt:"2026-10-16T15:00", sourceName:"학생 등록", sourceUrl:"", origin:"직접 등록", image:"", attachments:[] },
-    { id:"demo-family-1", category:"family", title:"2026학년도 2학기 학부모 상담 주간 안내", body:"상담 기간은 10월 19일~23일입니다. 희망 시간과 상담 내용을 신청해 주세요.", author:"학생생활부", createdAt:"2026-10-11T14:00:00", categoryLabel:"가정통신문", subject:"", audience:"한빛고등학교 전체", dueAt:"2026-10-19T09:00", sourceName:"학교 홈페이지", sourceUrl:"https://seohyun-h.goesn.kr/seohyun-h/na/ntt/selectNttList.do?bbsId=15548&mi=19944", origin:"자동 수집", image:"", attachments:[] },
-    { id:"demo-assessment-2", category:"assessment", title:"국어 주제 탐구 발표 자료 제출 안내", body:"발표 자료는 10월 19일 수업 전까지 제출해 주세요. 발표 순서는 수업 시간에 안내합니다.", author:"정유진 선생님", createdAt:"2026-10-10T11:30:00", categoryLabel:"수행평가", subject:"국어", audience:"2학년 3반", dueAt:"2026-10-19T09:00", sourceName:"교사 등록", sourceUrl:"", origin:"직접 등록", image:"", attachments:[] },
-    { id:"demo-official-2", category:"official", title:"2026학년도 학교 안전 교육 자료 안내", body:"학생 안전 교육 자료와 확인 일정을 안내합니다. 학급 공지를 확인해 주세요.", author:"학생안전부", createdAt:"2026-10-09T10:00:00", categoryLabel:"학교 공지", subject:"", audience:"한빛고등학교 전체", dueAt:"", sourceName:"학교 홈페이지", sourceUrl:"https://seohyun-h.goesn.kr/seohyun-h/main.do", origin:"자동 수집", image:"", attachments:[] }
-  ];
-  const DEFAULT_TIMETABLE = [
-    {day:1,period:1,subject:"국어"},{day:1,period:2,subject:"수학 II"},{day:1,period:3,subject:"영어 I"},{day:1,period:4,subject:"화학 I"},{day:1,period:5,subject:"한국사"},{day:1,period:6,subject:"체육"},{day:1,period:7,subject:"창체"},
-    {day:2,period:1,subject:"수학 II"},{day:2,period:2,subject:"화학 I"},{day:2,period:3,subject:"한국사"},{day:2,period:4,subject:"영어 I"},{day:2,period:5,subject:"국어"},{day:2,period:6,subject:"진로"},{day:2,period:7,subject:"자율"},
-    {day:3,period:1,subject:"영어 I"},{day:3,period:2,subject:"국어"},{day:3,period:3,subject:"수학 II"},{day:3,period:4,subject:"체육"},{day:3,period:5,subject:"화학 I"},{day:3,period:6,subject:"한국사"},{day:3,period:7,subject:"진로"},
-    {day:4,period:1,subject:"국어"},{day:4,period:2,subject:"영어 I"},{day:4,period:3,subject:"화학 I"},{day:4,period:4,subject:"수학 II"},{day:4,period:5,subject:"미술"},{day:4,period:6,subject:"동아리"},{day:4,period:7,subject:"동아리"},
-    {day:5,period:1,subject:"화학 I"},{day:5,period:2,subject:"체육"},{day:5,period:3,subject:"국어"},{day:5,period:4,subject:"한국사"},{day:5,period:5,subject:"영어 I"},{day:5,period:6,subject:"수학 II"},{day:5,period:7,subject:"자율"}
-  ];
-  let posts = loadValue(STORAGE_KEYS.posts, DEFAULT_POSTS);
-  let timetable = loadValue(STORAGE_KEYS.timetable, DEFAULT_TIMETABLE);
-  let profile = loadValue(STORAGE_KEYS.profile, {name:"김서연", grade:"2학년", className:"3반"});
-  let selectedCategory = "전체";
-  let activePostId = "";
-  let selectedSlot = null;
-  let attachedImages = [];
-  let toastTimer = 0;
-
-  function loadValue(key, fallback) {
-    try { const saved = localStorage.getItem(key); return saved ? JSON.parse(saved) : fallback; }
-    catch (error) { return fallback; }
-  }
-  function saveValue(key, value) {
-    try { localStorage.setItem(key, JSON.stringify(value)); return true; }
-    catch (error) { showToast("저장 공간이 부족합니다. 첨부 이미지 크기를 줄여 주세요."); return false; }
-  }
-  function escapeHtml(value) {
-    return String(value ?? "").replace(/[&<>"']/g, character => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[character]));
-  }
-  function getSafeUrl(value) {
-    try { const url = new URL(value); return ["http:","https:"].includes(url.protocol) ? url.href : ""; }
-    catch (error) { return ""; }
-  }
-  function getSafeImage(value) {
-    return typeof value === "string" && /^data:image\/(jpeg|png|webp);base64,/i.test(value) ? value : "";
-  }
-  function formatDate(value, options = {}) {
-    if (!value) return "";
-    const date = new Date(value);
-    if (Number.isNaN(date.getTime())) return "";
-    return new Intl.DateTimeFormat("ko-KR", {month:"numeric",day:"numeric",...(options.time ? {hour:"2-digit",minute:"2-digit"} : {})}).format(date);
-  }
-  function getDday(value) {
-    if (!value) return "";
-    const due = new Date(value); const today = new Date();
-    due.setHours(0,0,0,0); today.setHours(0,0,0,0);
-    const diff = Math.ceil((due.getTime()-today.getTime())/86400000);
-    return diff < 0 ? "마감" : diff === 0 ? "D-day" : `D-${diff}`;
-  }
-  function getCategoryLabel(post) { return post.categoryLabel || CATEGORY_LABELS[post.category] || post.category || "학교 소식"; }
-  function getTagClass(post) { return post.origin === "직접 등록" ? "orange" : post.origin === "자동 수집" ? "green" : "gray"; }
-  function getVisiblePosts() {
-    const query = document.getElementById("searchInput").value.trim().toLocaleLowerCase("ko-KR");
-    const sort = document.getElementById("sortSelect").value;
-    const filtered = posts.filter(post => {
-      const categoryMatch = selectedCategory === "전체" || getCategoryLabel(post) === selectedCategory;
-      const searchText = `${post.title} ${post.body} ${post.subject || ""} ${getCategoryLabel(post)}`.toLocaleLowerCase("ko-KR");
-      return categoryMatch && (!query || searchText.includes(query));
-    });
-    return filtered.sort((a,b) => sort === "oldest" ? new Date(a.createdAt)-new Date(b.createdAt) : new Date(b.createdAt)-new Date(a.createdAt));
-  }
-  function renderPostList() {
-    const visible = getVisiblePosts();
-    document.getElementById("resultCount").innerHTML = `${selectedCategory === "전체" ? "전체 소식" : escapeHtml(selectedCategory)} <b>${visible.length}</b>`;
-    const list = document.getElementById("postList");
-    if (!visible.length) {
-      list.innerHTML = `<div class="empty-state"><strong>검색 결과가 없습니다.</strong><span>다른 키워드나 분류를 선택해 보세요.</span><br><button class="outline" style="margin-top:14px" id="resetSearch">검색 초기화</button></div>`;
-      document.getElementById("resetSearch").addEventListener("click", resetSearch);
-      return;
-    }
-    list.innerHTML = visible.map(post => `<article class="post-row" data-post-id="${escapeHtml(post.id)}">${getSafeImage(post.image) ? `<img class="post-thumb" src="${getSafeImage(post.image)}" alt="게시글 첨부 이미지">` : ""}<div><span class="tag">${escapeHtml(getCategoryLabel(post))}</span><span class="tag ${getTagClass(post)}">${escapeHtml(post.origin || "직접 등록")}</span>${post.dueAt && post.subject ? `<span class="tag gray">내 학급</span>` : ""}</div><h3>${escapeHtml(post.title)}</h3><p>${escapeHtml(post.body).replace(/\n/g," ").slice(0,100)}${post.body.length > 100 ? "…" : ""}</p><div class="post-meta">${escapeHtml(post.sourceName || post.author || "학생 등록")} · ${escapeHtml(post.author || "")} · ${formatDate(post.createdAt,{time:true})}</div><span class="post-arrow">›</span></article>`).join("");
-    list.querySelectorAll("[data-post-id]").forEach(row => row.addEventListener("click", () => showDetail(row.dataset.postId)));
-  }
-  function getUpcomingPosts() {
-    const selectedSubjects = new Set(timetable.map(item => item.subject));
-    return posts.filter(post => post.dueAt && new Date(post.dueAt) >= new Date() && (!post.subject || selectedSubjects.has(post.subject))).sort((a,b) => new Date(a.dueAt)-new Date(b.dueAt)).slice(0,3);
-  }
-  function renderUpcoming() {
-    const upcoming = getUpcomingPosts();
-    const html = upcoming.length ? upcoming.map(post => `<div class="upcoming-item"><span class="dday">${getDday(post.dueAt)}</span><strong>${escapeHtml(post.subject || getCategoryLabel(post))}　${escapeHtml(post.title)}</strong><small>${formatDate(post.dueAt,{time:true})} 마감</small></div>`).join("") : `<div class="empty-state" style="padding:18px 4px">예정된 일정이 없어요.</div>`;
-    document.getElementById("upcomingList").innerHTML = html;
-    document.getElementById("timetableAssignments").innerHTML = html;
-  }
-  function renderTimetable() {
-    const grid = document.getElementById("weekGrid");
-    let html = `<div class="week-cell head">교시</div>${DAYS.slice(1).map((day,index) => `<div class="week-cell head ${index===0?"this-day":""}">${day} ${12+index}</div>`).join("")}`;
-    for (let period=1; period<=7; period++) {
-      html += `<div class="week-cell time">${period}교시</div>`;
-      for (let day=1; day<=5; day++) {
-        const item = timetable.find(entry => entry.day === day && entry.period === period);
-        html += `<div class="week-cell course ${item?"has-course":""}" data-slot="${day}-${period}" title="눌러서 과목 편집">${item?escapeHtml(item.subject):"＋"}</div>`;
-      }
-    }
-    grid.innerHTML = html;
-    grid.querySelectorAll("[data-slot]").forEach(cell => cell.addEventListener("click", () => {
-      const [day,period] = cell.dataset.slot.split("-").map(Number);
-      selectedSlot={day,period};const current=timetable.find(item=>item.day===day&&item.period===period);
-      document.getElementById("dayInput").value = String(day); document.getElementById("periodInput").value = String(period); document.getElementById("courseInput").value=current?.subject||"";
-      document.getElementById("addCourseButton").textContent=current?"과목 수정":"과목 추가";
-      document.getElementById("deleteCourseButton").classList.toggle("page-hidden",!current);
-      document.getElementById("courseInput").focus();
-    }));
-    const initials = profile.name.slice(0,2);
-    document.getElementById("topAvatar").textContent = initials; document.getElementById("topName").textContent = profile.name;
-    document.getElementById("profileAvatar").textContent = initials; document.getElementById("profileName").textContent = profile.name;
-    document.getElementById("authorAvatar").textContent = initials; document.getElementById("authorName").textContent = profile.name;
-    document.getElementById("profileClass").textContent = `한빛고등학교 · ${profile.grade} ${profile.className}`;
-    document.getElementById("authorClass").textContent = `${profile.grade} ${profile.className}`;
-    document.getElementById("classTag").textContent = `${profile.grade} ${profile.className}`;
-    document.getElementById("personalGreeting").textContent = `${profile.name.slice(1)}님의 한 주를 한눈에.`;
-    const today = new Date().getDay();
-    const todayCourses = timetable.filter(item => item.day === (today===0?1:Math.min(today,5))).sort((a,b)=>a.period-b.period).map(item=>`${item.period}교시 ${item.subject}`).join(" · ");
-    document.getElementById("todayCourseSummary").textContent = todayCourses || "시간표에서 오늘 수업을 확인해 보세요.";
-    const subjectSelect = document.getElementById("postSubject");
-    const subjects = [...new Set(timetable.map(item => item.subject))].sort((a,b)=>a.localeCompare(b,"ko"));
-    const priorValue = subjectSelect.value;
-    subjectSelect.innerHTML = `<option value="">과목 선택 안 함</option>${subjects.map(subject=>`<option value="${escapeHtml(subject)}">${escapeHtml(subject)}</option>`).join("")}`;
-    if (subjects.includes(priorValue)) subjectSelect.value = priorValue;
-  }
-  function showView(name) {
-    ["search","timetable","register","detail"].forEach(view => document.getElementById(`${view}View`).classList.toggle("page-hidden", view !== name));
-    document.querySelectorAll(".nav button[data-view]").forEach(button => button.classList.toggle("active", button.dataset.view === name));
-    if (name === "search") renderPostList();
-    if (name === "timetable") renderTimetable();
-    if (name === "register") renderTimetable();
-    window.scrollTo({top:0,behavior:"smooth"});
-  }
-  function showDetail(postId) {
-    const post = posts.find(item => item.id === postId); if (!post) return;
-    activePostId = postId;
-    const detail = document.getElementById("detailView");
-    const dueDate = post.dueAt ? new Date(post.dueAt) : null;
-    const related = posts.filter(item => item.id !== post.id && (item.subject && item.subject === post.subject || item.category === post.category)).slice(0,3);
-    detail.innerHTML = `<div class="detail-back"><button class="subtle-link" id="backToSearch">← 전체 소식으로 돌아가기</button><span>통합 검색　/　${escapeHtml(getCategoryLabel(post))}</span></div><div class="detail-layout"><article class="card article"><div><span class="tag">${escapeHtml(getCategoryLabel(post))}</span><span class="tag green">${escapeHtml(post.origin || "직접 등록")}</span><span class="tag gray">${escapeHtml(post.audience || "한빛고등학교 전체")}</span></div><h1>${escapeHtml(post.title)}</h1><div class="article-meta"><span class="avatar" style="display:inline-grid;vertical-align:middle;margin-right:6px">${escapeHtml((post.author||"학생").slice(0,1))}</span>${escapeHtml(post.author || "학생 등록")}　·　${escapeHtml(post.sourceName||"로컬 베타")}　·　${formatDate(post.createdAt,{time:true})}</div>${dueDate?`<div class="due-banner"><div><small style="color:var(--blue)">▦　보고서 제출 기한</small><b>${formatDate(post.dueAt,{time:true})}까지</b></div><span class="dday">${getDday(post.dueAt)}</span></div>`:""}${getSafeImage(post.image)?`<img class="hero-image" src="${getSafeImage(post.image)}" alt="게시글 첨부 이미지">`:""}<div class="article-body">${escapeHtml(post.body)}</div>${post.attachments&&post.attachments.length?post.attachments.map(file=>`<div class="attachment"><span>▤　${escapeHtml(file)}</span><span style="color:var(--muted)">첨부 파일</span></div>`).join(""):""}<div class="detail-actions"><span>수업 관련 질문은 담당 선생님께 문의해 주세요.</span><span>♧　☆</span></div></article><aside class="right-stack">${post.subject?`<section class="card side-card"><h2>수행평가 한눈에 보기</h2><p>과목 <b style="float:right;color:var(--ink)">${escapeHtml(post.subject)}</b></p><p>대상 <b style="float:right;color:var(--ink)">${escapeHtml(post.audience||"전체")}</b></p><p>제출 방식 <b style="float:right;color:var(--ink)">${escapeHtml(post.sourceName||"게시글 확인")}</b></p><button class="outline" data-go="timetable">▦　내 수행평가 일정 보기</button></section>`:""}<section class="card side-card"><h2>원문 정보</h2><div class="source-row"><span class="source-dot">↗</span>${escapeHtml(post.sourceName||"학생 등록")}</div><p>이 정보는 ${escapeHtml(post.origin||"기기 내 등록")}된 내용입니다. 자세한 사항은 원문 또는 작성자에게 확인해 주세요.</p>${getSafeUrl(post.sourceUrl)?`<a class="primary" style="display:inline-block;margin:3px 0" href="${escapeHtml(getSafeUrl(post.sourceUrl))}" target="_blank" rel="noreferrer">↗ 원문 보기</a>`:`<span class="tag orange">로컬 베타 게시글</span>`}<p>등록 일시 ${formatDate(post.createdAt,{time:true})}</p></section><section class="card side-card blue-panel"><span style="font-size:17px;color:var(--blue)">◷</span><h2 style="margin-top:8px">정보가 달라졌나요?</h2><p>잘못된 일정이나 내용을 발견하면 작성자에게 알려 주세요.</p></section>${related.length?`<section class="card side-card"><h2>함께 보면 좋은 정보</h2>${related.map(item=>`<div class="upcoming-item" data-post-id="${escapeHtml(item.id)}"><button class="subtle-link" data-open-related="${escapeHtml(item.id)}">${escapeHtml(item.title)}　›</button></div>`).join("")}</section>`:""}</aside></div>`;
-    detail.querySelector("#backToSearch").addEventListener("click", () => showView("search"));
-    detail.querySelectorAll("[data-go]").forEach(button => button.addEventListener("click",()=>showView(button.dataset.go)));
-    detail.querySelectorAll("[data-open-related]").forEach(button=>button.addEventListener("click",()=>showDetail(button.dataset.openRelated)));
-    showView("detail");
-  }
-  function resetSearch() { document.getElementById("searchInput").value="";selectedCategory="전체";document.querySelectorAll("#categoryRow .chip").forEach(button=>button.classList.toggle("active",button.dataset.category==="전체"));renderPostList(); }
-  function showToast(message) { const toast=document.getElementById("toast");toast.textContent=message;toast.classList.remove("page-hidden");window.clearTimeout(toastTimer);toastTimer=window.setTimeout(()=>toast.classList.add("page-hidden"),2600); }
-  function addCourse() {
-    const input=document.getElementById("courseInput");const subject=input.value.trim();const day=Number(document.getElementById("dayInput").value);const period=Number(document.getElementById("periodInput").value);
-    if(!subject){showToast("과목 이름을 입력해 주세요.");input.focus();return;}
-    const existing=timetable.find(item=>item.day===day&&item.period===period);
-    if(existing&&(!selectedSlot||selectedSlot.day!==day||selectedSlot.period!==period)){showToast(`${DAYS[day]}요일 ${period}교시에 ${existing.subject}이(가) 이미 있어요.`);return;}
-    if(existing)existing.subject=subject;else timetable.push({day,period,subject});
-    if(saveValue(STORAGE_KEYS.timetable,timetable)){input.value="";selectedSlot=null;document.getElementById("addCourseButton").textContent="과목 추가";document.getElementById("deleteCourseButton").classList.add("page-hidden");renderTimetable();renderUpcoming();showToast("내 시간표를 저장했어요.");}
-  }
-  function deleteSelectedCourse() {
-    if(!selectedSlot)return;
-    timetable=timetable.filter(item=>item.day!==selectedSlot.day||item.period!==selectedSlot.period);
-    if(saveValue(STORAGE_KEYS.timetable,timetable)){selectedSlot=null;document.getElementById("courseInput").value="";document.getElementById("addCourseButton").textContent="과목 추가";document.getElementById("deleteCourseButton").classList.add("page-hidden");renderTimetable();renderUpcoming();showToast("시간표에서 과목을 삭제했어요.");}
-  }
-  function openProfileEditor() {
-    document.getElementById("modalRoot").innerHTML=`<div class="modal-backdrop" id="modalBackdrop"><section class="modal"><h2>내 프로필 설정</h2><p>이름과 학급은 이 기기의 브라우저에만 저장됩니다.</p><div class="field" style="margin:12px 0"><label for="editName">이름</label><input id="editName" value="${escapeHtml(profile.name)}" maxlength="20"></div><div class="form-grid" style="grid-template-columns:1fr 1fr;margin:0"><div class="field"><label for="editGrade">학년</label><select id="editGrade">${[1,2,3].map(grade=>`<option ${profile.grade===`${grade}학년`?"selected":""}>${grade}학년</option>`).join("")}</select></div><div class="field"><label for="editClass">반</label><input id="editClass" value="${escapeHtml(profile.className.replace("반",""))}" maxlength="3"></div></div><div class="modal-actions"><button class="outline" id="cancelProfile">취소</button><button class="primary" id="saveProfile">저장</button></div></section></div>`;
-    document.getElementById("cancelProfile").addEventListener("click",()=>document.getElementById("modalRoot").innerHTML="");
-    document.getElementById("modalBackdrop").addEventListener("click",event=>{if(event.target.id==="modalBackdrop")document.getElementById("modalRoot").innerHTML="";});
-    document.getElementById("saveProfile").addEventListener("click",()=>{const name=document.getElementById("editName").value.trim();const classValue=document.getElementById("editClass").value.trim();if(!name||!classValue){showToast("이름과 반을 입력해 주세요.");return;}profile={name,grade:document.getElementById("editGrade").value,className:`${classValue}반`};saveValue(STORAGE_KEYS.profile,profile);document.getElementById("modalRoot").innerHTML="";renderTimetable();showToast("프로필을 저장했어요.");});
-  }
-  async function readImages(files) {
-    const selected=[...files];
-    if(selected.length+attachedImages.length>3){showToast("이미지는 최대 3장까지 첨부할 수 있어요.");return;}
-    for(const file of selected){
-      if(!["image/jpeg","image/png","image/webp"].includes(file.type)){showToast("JPG, PNG, WebP 이미지 파일만 첨부할 수 있어요.");continue;}
-      if(file.size>512000){showToast("이미지 파일은 500KB 이하로 선택해 주세요.");continue;}
-      const dataUrl=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=reject;reader.readAsDataURL(file);});
-      attachedImages.push({name:file.name,dataUrl});
-    }
-    renderFileList();document.getElementById("imageInput").value="";
-  }
-  function renderFileList() {
-    const list=document.getElementById("fileList");
-    list.innerHTML=attachedImages.map((file,index)=>`<span class="file-pill">▧ ${escapeHtml(file.name)} <button type="button" data-remove-image="${index}" aria-label="이미지 삭제" style="border:0;background:none;color:#78869b">×</button></span>`).join("");
-    list.querySelectorAll("[data-remove-image]").forEach(button=>button.addEventListener("click",()=>{attachedImages.splice(Number(button.dataset.removeImage),1);renderFileList();}));
-  }
-  function resetForm() { document.getElementById("postForm").reset();attachedImages=[];renderFileList(); }
-  function submitPost(event) {
-    event.preventDefault();
-    const title=document.getElementById("postTitle").value.trim();const body=document.getElementById("postBody").value.trim();
-    if(!title||!body){showToast("제목과 내용을 모두 입력해 주세요.");return;}
-    const label=document.getElementById("postCategory").value;
-    const category=label==="학교 공지"?"official":label==="수행평가"?"assessment":label==="가정통신문"?"family":"event";
-    const subject=document.getElementById("postSubject").value;
-    const dueInput=document.getElementById("postDue").value;
-    const newPost={id:`local-${Date.now()}`,category,categoryLabel:label,title,body,author:profile.name,createdAt:new Date().toISOString(),subject,audience:document.getElementById("postAudience").value,dueAt:dueInput?new Date(dueInput).toISOString():"",sourceName:"학생 등록",sourceUrl:"",origin:"직접 등록",image:attachedImages[0]?.dataUrl||"",attachments:attachedImages.slice(1).map(item=>item.name)};
-    posts.unshift(newPost);
-    if(!saveValue(STORAGE_KEYS.posts,posts)){posts.shift();return;}
-    resetForm();renderUpcoming();renderPostList();showView("search");showToast("정보를 등록했어요. 통합 검색에 반영했습니다.");
-  }
-  function exportPosts() {
-    const payload={version:1,exportedAt:new Date().toISOString(),posts};const blob=new Blob([JSON.stringify(payload,null,2)],{type:"application/json"});const url=URL.createObjectURL(blob);const link=document.createElement("a");link.href=url;link.download="sifs-posts.json";link.click();URL.revokeObjectURL(url);showToast("게시글 백업 파일을 내보냈어요.");
-  }
-  async function importPosts(file) {
-    try {
-      const data=JSON.parse(await file.text());const incoming=Array.isArray(data)?data:data.posts;
-      if(!Array.isArray(incoming))throw new Error("posts 배열이 없습니다.");
-      const valid=incoming.filter(item=>item&&typeof item.title==="string"&&typeof item.body==="string").map(item=>({...item,id:item.id||`import-${Date.now()}-${Math.random().toString(36).slice(2,7)}`,createdAt:item.createdAt||new Date().toISOString(),origin:item.origin||"가져오기"}));
-      const existing=new Set(posts.map(item=>item.id));posts=[...valid.filter(item=>!existing.has(item.id)),...posts];
-      if(saveValue(STORAGE_KEYS.posts,posts)){renderPostList();renderUpcoming();showToast(`${valid.length}개 게시글을 가져왔어요.`);}
-    } catch(error) { showToast("가져올 수 없는 JSON 파일입니다."); }
-  }
-  function handleNavigation(event) {
-    const viewButton=event.target.closest("[data-view]");const goButton=event.target.closest("[data-go]");
-    if(viewButton)showView(viewButton.dataset.view);else if(goButton)showView(goButton.dataset.go);
-  }
-  function initializeApp() {
-    const date=new Intl.DateTimeFormat("ko-KR",{month:"long",day:"numeric",weekday:"long"}).format(new Date());document.getElementById("todayLabel").textContent=date;
-    document.querySelectorAll(".nav button[data-view]").forEach(button=>button.addEventListener("click",()=>showView(button.dataset.view)));
-    document.querySelectorAll("[data-go]").forEach(button=>button.addEventListener("click",()=>showView(button.dataset.go)));
-    document.getElementById("searchForm").addEventListener("submit",event=>{event.preventDefault();renderPostList();});
-    document.getElementById("searchInput").addEventListener("input",renderPostList);
-    document.querySelectorAll("#filterRow [data-query]").forEach(button=>button.addEventListener("click",()=>{document.getElementById("searchInput").value=button.dataset.query;renderPostList();}));
-    document.querySelectorAll("#categoryRow [data-category]").forEach(button=>button.addEventListener("click",()=>{selectedCategory=button.dataset.category;document.querySelectorAll("#categoryRow .chip").forEach(item=>item.classList.toggle("active",item===button));renderPostList();}));
-    document.getElementById("sortSelect").addEventListener("change",renderPostList);
-    document.getElementById("addCourseButton").addEventListener("click",addCourse);
-    document.getElementById("courseInput").addEventListener("keydown",event=>{if(event.key==="Enter"){event.preventDefault();addCourse();}});
-    document.getElementById("editProfileButton").addEventListener("click",openProfileEditor);
-    document.getElementById("deleteCourseButton").addEventListener("click",deleteSelectedCourse);
-    document.getElementById("postForm").addEventListener("submit",submitPost);
-    document.getElementById("imageInput").addEventListener("change",event=>readImages(event.target.files));
-    document.getElementById("postAudience").addEventListener("change",event=>{if(event.target.value==="내가 선택한 과목"&&timetable.length===0)showToast("먼저 나의 학교생활에서 과목을 추가해 주세요.");});
-    document.getElementById("importButton").addEventListener("click",()=>document.getElementById("importInput").click());
-    document.getElementById("importInput").addEventListener("change",event=>{if(event.target.files[0])importPosts(event.target.files[0]);event.target.value="";});
-    document.getElementById("exportButton").addEventListener("click",exportPosts);
-    renderPostList();renderTimetable();renderUpcoming();
-  }
-  initializeApp();
-</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="./app.js"></script>
 </body>
 </html>
