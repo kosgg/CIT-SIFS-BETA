@@ -2,22 +2,27 @@
 
 학교 공지와 학생이 직접 등록한 정보를 모아 보는 웹 앱입니다. 프런트엔드는 정적 웹사이트로 배포하고, 계정·게시글·시간표 데이터는 Supabase에 저장합니다.
 
-## 현재 상태
+## 현재 진행 상황 (2026-10-22)
 
-- 검색, 게시글 등록, 공개 범위, 신고와 운영자 신고 검토 기능이 코드에 반영되어 있습니다.
-- 학교·학년·반은 사용자가 계정별로 설정하고, 실제 시간표는 빈 표에서 직접 입력합니다. 같은 계정으로 로그인하면 다른 기기에서도 불러옵니다.
-- 서현고 공지·학사일정·급식 연동용 Supabase Edge Function 코드가 있습니다. 공개 프로젝트에 배포됐는지는 Supabase 대시보드에서 확인해야 합니다.
-- 로컬 미리보기는 `http://127.0.0.1:8765/`에서 열립니다. 공개 사이트는 GitHub에 코드를 올린 뒤 Netlify **Deploys**에서 배포 성공 여부를 확인합니다.
+### 완료한 설정과 확인
 
-## 지금 해야 할 일
+- Supabase SQL Editor에서 `supabase-setup.sql` 적용을 완료했습니다.
+- Supabase Edge Functions의 `school-notices`, `school-information` 배포를 완료했습니다.
+- Supabase 로그인 URL과 Google OAuth 웹 클라이언트 주소를 설정했습니다.
+- Netlify 사이트에서 로그인한 뒤 서현고 공지·학사일정·급식 정보가 표시되는 것을 확인했습니다.
+- 앱에 포함되어 있던 기본 데모 게시글은 현재 코드에서 제거했습니다. 사용자가 직접 만든 테스트 게시글은 별도로 남아 있을 수 있습니다.
+- 최신 앱 코드와 이 진행 상황 문서는 GitHub `main` 브랜치에서 관리합니다.
 
-아래 순서대로 진행하면 최신 코드를 온라인에 반영할 수 있습니다.
+### 다음에 할 일
 
-1. **Supabase SQL 적용:** Supabase 대시보드의 **SQL Editor**에서 이 폴더의 최신 `supabase-setup.sql` 전체를 한 번 실행합니다. 새 `target_school` 컬럼과 학교별 공개 권한을 추가하고 기존 게시글을 서현고 대상으로 보정합니다. `hongsg821@gmail.com` 계정이 Supabase Auth에 등록되어 있어야 합니다.
-2. **공지·학사정보 함수 확인:** Edge Function 메뉴에 `school-notices`, `school-information`이 없다면 아래 명령으로 배포합니다. 이미 배포돼 있어도 코드가 바뀐 경우 다시 배포합니다.
-3. **웹사이트 재배포:** 최신 `index.html`, `app.js`, `styles.css`를 Netlify에 올립니다. SQL 적용 전에 새 프런트엔드를 배포하면 `target_school` 컬럼을 찾지 못해 게시글 피드가 실패할 수 있으므로 SQL을 먼저 실행합니다.
-4. **Google 로그인 주소 확인:** Supabase Authentication의 Site URL과 Redirect URLs에 실제 Netlify 주소가 등록되어 있는지 확인합니다. 공개 사용자는 Google OAuth 앱도 테스트 모드가 아닌 게시 상태여야 합니다.
-5. **계정별 동작 확인:** 두 계정으로 로그인해 같은 학교·같은 학급 게시글, 다른 학급·다른 학교 게시글이 각각 의도한 범위로 보이는지 확인합니다. 시간표 입력 후 로그아웃·재로그인 및 다른 기기에서도 같은 계정 데이터를 불러오는지 확인합니다.
+1. **Netlify 최신 배포 확인:** Netlify의 **Deploys**에서 GitHub `main`의 최신 커밋이 성공적으로 배포됐는지 확인하고, 사이트를 시크릿 창에서 새로고침합니다. 기본 데모 글이 없어졌는지 확인하고, 직접 등록한 `test` 등의 글은 앱에서 따로 삭제합니다.
+2. **공개 범위 확인:** 서로 다른 두 계정으로 같은 학교·같은 학급, 다른 학급, 다른 학교 게시글이 각 대상에게만 보이는지 확인합니다.
+3. **시간표 동기화 확인:** 시간표를 저장한 계정으로 로그아웃 후 다시 로그인하거나 다른 기기에서 로그인해 같은 시간표가 보이는지 확인합니다.
+4. **신고 흐름 확인:** 테스트 게시글을 신고하고 `hongsg821@gmail.com` 운영자 계정의 **신고 관리**에서 확인·처리·숨김이 되는지 점검한 뒤 테스트 자료를 정리합니다.
+5. **공개 전 개인정보 점검:** 비공개 게시글의 예전 이미지가 공개 URL로 남아 있는지 아래 SQL로 찾고, 백업 JSON에 학번이 포함될 수 있다는 안내가 사용자에게 보이는지 확인합니다.
+6. **공개 범위 확대 전 준비:** 현재 학교·학년·반은 직접 입력한 값이라 재학이나 반 배정을 증명하지 않습니다. 더 넓게 공개하거나 학급 소속을 신뢰해야 한다면 초대 코드 같은 확인 절차를 추가합니다. 일반 사용자에게 Google 로그인을 열기 전에는 OAuth 앱 게시 및 필요한 검증을 마칩니다. 테스트 중이라면 Google OAuth를 Testing 상태로 유지해도 됩니다.
+
+로컬 미리보기는 `http://127.0.0.1:8765/`에서 열립니다. 공개 주소는 [https://cit-sifs.netlify.app](https://cit-sifs.netlify.app)입니다. 로컬 파일이 GitHub에 올라갔다고 Netlify 배포까지 완료된 것은 아니므로, 위 1번에서 최신 배포를 확인하세요.
 
 ## 아직 다듬지 않은 점과 제한
 
@@ -44,7 +49,7 @@ node dev-server.mjs
 1. **SQL Editor**에서 최신 `supabase-setup.sql` 전체를 실행합니다. 게시글·프로필·시간표 테이블, 공개 범위 RLS 정책, 이미지 버킷, 게시글 실시간 구독, 지정 신고 운영자를 설정합니다.
 2. `app.js`의 Supabase Project URL과 publishable key는 브라우저에서 사용하는 공개 값입니다. `service_role`이나 비밀 키를 프런트엔드에 넣지 마세요.
 3. Google Cloud에서 OAuth 웹 클라이언트를 설정하고 승인된 JavaScript 출처에 실제 앱 주소, 리디렉션 URI에 `https://wljqmhwshmbcaitfiudc.supabase.co/auth/v1/callback`을 등록합니다.
-4. Google Auth Platform에서 일반 Google 계정의 로그인을 허용하도록 OAuth 앱을 게시하고, Supabase **Authentication → Sign In / Providers → Google**에 Client ID와 Client Secret을 입력합니다. Secret은 프런트엔드에 넣지 않습니다.
+4. Supabase **Authentication → Sign In / Providers → Google**에 Client ID와 Client Secret을 입력합니다. Secret은 프런트엔드에 넣지 않습니다. 테스트 중에는 OAuth 앱을 Testing 상태로 둘 수 있으며, 일반 사용자에게 공개하기 전에는 게시 상태와 필요한 검증 요건을 확인합니다.
 5. Supabase **Authentication → URL Configuration**의 Site URL과 Redirect URLs에 앱의 실제 HTTPS 주소를 등록합니다. `file://` 주소에서는 OAuth 로그인이 되지 않습니다.
 
 앱은 Google의 `openid`, `email`, `profile` 범위만 사용합니다. 자세한 내용은 [Supabase Google 로그인 안내](https://supabase.com/docs/guides/auth/social-login/auth-google)를 참고하세요.
@@ -90,11 +95,13 @@ where audience_type <> 'school'
 
 ## 공개 전 확인 목록
 
-- [ ] 최신 `supabase-setup.sql` 실행 성공
-- [ ] Google OAuth가 실제 Netlify 주소에서 로그인·로그아웃됨
-- [ ] 최신 프런트엔드 파일을 Netlify에 배포함
-- [ ] 필요한 두 Edge Function이 배포되고 공지·학사일정·급식이 새로고침됨
+- [x] 최신 `supabase-setup.sql` 실행 (완료 보고 기준)
+- [x] `school-notices`, `school-information` Edge Function 배포 (완료 확인)
+- [x] Netlify에서 로그인 후 공지·학사일정·급식 표시 확인
+- [ ] GitHub `main`의 최신 커밋이 Netlify에 성공적으로 배포되고 기본 데모 글이 사라졌는지 확인
+- [ ] Google 로그인 버튼으로 테스트 계정 로그인·로그아웃 확인 (사용한 로그인 제공자가 Google인지 별도 확인 필요)
 - [ ] 서로 다른 계정·학교·학급으로 게시글 공개 범위를 확인함
 - [ ] 시간표가 같은 계정의 다른 기기에서 동기화됨
 - [ ] 신고가 운영자 계정에서만 보이고 처리·숨김 동작이 확인됨
 - [ ] 이전 공개 이미지 점검 및 직접 등록한 테스트 게시글 정리 완료
+- [ ] 백업에 학번이 포함될 수 있다는 안내와 학교·학급 수동 입력 한계 확인
