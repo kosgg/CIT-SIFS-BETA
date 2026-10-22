@@ -6,16 +6,12 @@ const STORAGE_KEYS = { posts: "sifs.beta.posts.v1", timetable: "sifs.beta.timeta
   const DEFAULT_SCHOOL_NAME = "서현고등학교";
   const SCHOOL_NOTICE_REFRESH_INTERVAL_MS = 30 * 60 * 1000;
   const CATEGORY_LABELS = { official: "학교 공지", assessment: "수행평가", event: "행사", family: "가정통신문" };
-  const DEFAULT_POSTS_SOURCE = [
-    { id:"demo-assessment-1", category:"assessment", title:"화학 I 산화·환원 실험 보고서 안내", body:"2학년 3반 여러분, 오늘 진행한 산화·환원 실험을 바탕으로 실험 보고서를 작성해 주세요.\n\n보고서에 포함할 내용\n1. 실험 목적과 준비물\n2. 실험 과정 및 관찰 결과\n3. 산화·환원 반응식과 전자 이동 방향\n4. 결과 해석 및 실험을 통해 알게 된 점\n\n제공한 양식에 작성한 뒤 Google Classroom에 제출해 주세요.", author:"박지훈 선생님", createdAt:"2026-10-12T09:10:00", categoryLabel:"수행평가", subject:"화학 I", audience:"2학년 3반", dueAt:"2026-10-15T23:59", sourceName:"Google Classroom", sourceUrl:"https://classroom.google.com", origin:"자동 수집", image:"", attachments:["산화환원_실험보고서_양식.hwp"] },
-    { id:"demo-official-1", category:"official", title:"2학기 중간고사 시험 시간표 및 유의사항", body:"10월 26일~29일 중간고사 일정과 시험실 배치도를 확인해 주세요. 상세 내용은 학교 홈페이지 원문을 확인해 주세요.", author:"교무부", createdAt:"2026-10-12T08:40:00", categoryLabel:"학교 공지", subject:"", audience:"서현고등학교 전체", dueAt:"", sourceName:"리로스쿨", sourceUrl:"https://seohyun-h.goesn.kr/seohyun-h/main.do", origin:"자동 수집", image:"", attachments:[] },
-    { id:"demo-event-1", category:"event", title:"교내 축제 부스 운영팀을 모집합니다", body:"우리 반의 아이디어를 축제로! 부스 기획안을 10월 16일까지 보내 주세요.\n\n관심 있는 친구는 담임 선생님께 알려 주세요.", author:"학생회", createdAt:"2026-10-11T16:20:00", categoryLabel:"행사", subject:"", audience:"서현고등학교 전체", dueAt:"2026-10-16T15:00", sourceName:"학생 등록", sourceUrl:"", origin:"직접 등록", image:"", attachments:[] },
-    { id:"demo-family-1", category:"family", title:"2026학년도 2학기 학부모 상담 주간 안내", body:"상담 기간은 10월 19일~23일입니다. 희망 시간과 상담 내용을 신청해 주세요.", author:"학생생활부", createdAt:"2026-10-11T14:00:00", categoryLabel:"가정통신문", subject:"", audience:"서현고등학교 전체", dueAt:"2026-10-19T09:00", sourceName:"학교 홈페이지", sourceUrl:"https://seohyun-h.goesn.kr/seohyun-h/na/ntt/selectNttList.do?bbsId=15548&mi=19944", origin:"자동 수집", image:"", attachments:[] },
-    { id:"demo-assessment-2", category:"assessment", title:"국어 주제 탐구 발표 자료 제출 안내", body:"발표 자료는 10월 19일 수업 전까지 제출해 주세요. 발표 순서는 수업 시간에 안내합니다.", author:"정유진 선생님", createdAt:"2026-10-10T11:30:00", categoryLabel:"수행평가", subject:"국어", audience:"2학년 3반", dueAt:"2026-10-19T09:00", sourceName:"교사 등록", sourceUrl:"", origin:"직접 등록", image:"", attachments:[] },
-    { id:"demo-official-2", category:"official", title:"2026학년도 학교 안전 교육 자료 안내", body:"학생 안전 교육 자료와 확인 일정을 안내합니다. 학급 공지를 확인해 주세요.", author:"학생안전부", createdAt:"2026-10-09T10:00:00", categoryLabel:"학교 공지", subject:"", audience:"서현고등학교 전체", dueAt:"", sourceName:"학교 홈페이지", sourceUrl:"https://seohyun-h.goesn.kr/seohyun-h/main.do", origin:"자동 수집", image:"", attachments:[] }
-  ];
-  const RETIRED_DEMO_POST_IDS = new Set(DEFAULT_POSTS_SOURCE.filter(post => post.id.startsWith("demo-official-")).map(post => post.id));
-  const DEFAULT_POSTS = DEFAULT_POSTS_SOURCE.filter(post => !RETIRED_DEMO_POST_IDS.has(post.id)).map(post => ({...post, origin:"예시 정보", audience_type:"school", moderation_status:"published"}));
+  // Keep retired IDs so old local caches, backups, or cloud rows cannot revive bundled demo posts.
+  const RETIRED_DEMO_POST_IDS = new Set([
+    "demo-assessment-1", "demo-official-1", "demo-event-1",
+    "demo-family-1", "demo-assessment-2", "demo-official-2"
+  ]);
+  const DEFAULT_POSTS = [];
   const LEGACY_SAMPLE_TIMETABLE = [
     {day:1,period:1,subject:"국어"},{day:1,period:2,subject:"수학 II"},{day:1,period:3,subject:"영어 I"},{day:1,period:4,subject:"화학 I"},{day:1,period:5,subject:"한국사"},{day:1,period:6,subject:"체육"},{day:1,period:7,subject:"창체"},
     {day:2,period:1,subject:"수학 II"},{day:2,period:2,subject:"화학 I"},{day:2,period:3,subject:"한국사"},{day:2,period:4,subject:"영어 I"},{day:2,period:5,subject:"국어"},{day:2,period:6,subject:"진로"},{day:2,period:7,subject:"자율"},
@@ -112,7 +108,6 @@ const STORAGE_KEYS = { posts: "sifs.beta.posts.v1", timetable: "sifs.beta.timeta
     };
   }
   let posts = loadValue(STORAGE_KEYS.posts, DEFAULT_POSTS)
-    .map(post => post.id === "demo-event-1" ? {...post, ...DEFAULT_POSTS.find(item => item.id === "demo-event-1")} : post)
     .filter(post => isSchoolPost(post) && !RETIRED_DEMO_POST_IDS.has(post.id));
   let schoolNoticePosts = [];
   let schoolNoticeSourceName = "서현고등학교";
@@ -523,7 +518,7 @@ const STORAGE_KEYS = { posts: "sifs.beta.posts.v1", timetable: "sifs.beta.timeta
       id: typeof item.id === "string" && item.id ? item.id : "import-" + Date.now() + "-" + index,
       createdAt: typeof item.createdAt === "string" && !Number.isNaN(new Date(item.createdAt).getTime()) ? item.createdAt : importedAt,
       origin: typeof item.origin === "string" && item.origin ? item.origin : "가져오기"
-    }));
+    })).filter(item => !RETIRED_DEMO_POST_IDS.has(item.id));
   }
   function validateBackup(data) {
     if (!data || data.app !== "SIFS" || data.version !== 2) throw new Error("지원하지 않는 전체 백업 형식입니다.");
@@ -566,7 +561,7 @@ const STORAGE_KEYS = { posts: "sifs.beta.posts.v1", timetable: "sifs.beta.timeta
   function saveFullBackup(backup) {
     const savedProfileKey = profileStorageKey(currentUser?.id || "");
     const savedTimetableKey = timetableStorageKey(currentUser?.id || "");
-    const savedPublicPosts = backup.posts.filter(post => isSchoolPost(post) && audienceForPost(post).schoolName === backup.profile.schoolName);
+    const savedPublicPosts = backup.posts.filter(post => isSchoolPost(post) && audienceForPost(post).schoolName === backup.profile.schoolName && !RETIRED_DEMO_POST_IDS.has(post.id));
     const values = {
       [STORAGE_KEYS.posts]: savedPublicPosts,
       [savedTimetableKey]: backup.timetable,
@@ -847,7 +842,7 @@ const STORAGE_KEYS = { posts: "sifs.beta.posts.v1", timetable: "sifs.beta.timeta
     setSchoolInformationStatus("schoolMealStatus", "서현고 공식 급식표를 불러오는 중입니다.");
     try {
       let data;
-      if (localPreview) {
+      if (localPreview && !supabaseClient) {
         const response = await fetch("/api/school-information", { cache: "no-store" });
         data = await response.json();
         if (!response.ok) throw new Error(data?.error || "Local school information proxy failed");
@@ -877,7 +872,7 @@ const STORAGE_KEYS = { posts: "sifs.beta.posts.v1", timetable: "sifs.beta.timeta
       if (!quiet) showToast(scheduleFailed || mealsFailed ? "학교 정보를 일부만 불러왔어요." : "학사일정과 급식을 새로 불러왔어요.");
       return !scheduleFailed || !mealsFailed;
     } catch (error) {
-      const message = localPreview
+      const message = localPreview && !supabaseClient
         ? "공식 학사일정·급식을 가져오지 못했습니다. 잠시 후 다시 시도해 주세요."
         : "실시간 연동을 사용할 수 없습니다. Supabase 학교 정보 함수 배포를 확인해 주세요.";
       setSchoolInformationStatus("schoolScheduleStatus", message, true);
@@ -903,7 +898,7 @@ const STORAGE_KEYS = { posts: "sifs.beta.posts.v1", timetable: "sifs.beta.timeta
     setSchoolNoticeStatus("서현고 공식 홈페이지에서 공지를 불러오는 중입니다.");
     try {
       let data;
-      if (localPreview) {
+      if (localPreview && !supabaseClient) {
         const response = await fetch("/api/school-notices", {cache:"no-store"});
         data = await response.json();
         if (!response.ok) throw new Error(data?.error || "Local school notice proxy failed");
@@ -953,7 +948,7 @@ const STORAGE_KEYS = { posts: "sifs.beta.posts.v1", timetable: "sifs.beta.timeta
       if (!quiet) showToast(`공식 공지 ${schoolNoticePosts.length}건을 새로 불러왔어요.`);
       return true;
     } catch (error) {
-      setSchoolNoticeStatus(localPreview ? "공식 홈페이지에서 공지를 가져오지 못했습니다. 잠시 후 다시 시도해 주세요." : "실시간 연동을 사용할 수 없습니다. Supabase 함수 배포 상태를 확인해 주세요.", true);
+      setSchoolNoticeStatus(localPreview && !supabaseClient ? "공식 홈페이지에서 공지를 가져오지 못했습니다. 잠시 후 다시 시도해 주세요." : "실시간 연동을 사용할 수 없습니다. Supabase 함수 배포 상태를 확인해 주세요.", true);
       if (!quiet) showToast("학교 공지를 불러오지 못했습니다. 연결 상태를 확인해 주세요.");
       return false;
     } finally {
@@ -985,8 +980,7 @@ const STORAGE_KEYS = { posts: "sifs.beta.posts.v1", timetable: "sifs.beta.timeta
   }
   async function publishLocalPosts() {
     if (!currentUser) return;
-    const demoIds = new Set(DEFAULT_POSTS_SOURCE.map(post => post.id));
-    const localPosts = posts.filter(post => !demoIds.has(post.id) && !post.id.startsWith("post-"));
+    const localPosts = posts.filter(post => !RETIRED_DEMO_POST_IDS.has(post.id) && !post.id.startsWith("post-"));
     if (!localPosts.length || !window.confirm("이 기기에만 저장된 게시글 " + localPosts.length + "개를 선택한 공개 대상에게 공유할까요?")) return;
     for (const localPost of localPosts) {
       const existing = await supabaseClient.from("posts").select("id").eq("id", localPost.id).maybeSingle();
@@ -1148,7 +1142,7 @@ const STORAGE_KEYS = { posts: "sifs.beta.posts.v1", timetable: "sifs.beta.timeta
         updateModeratorNav();
         timetable = normalizeTimetable(loadValue(timetableStorageKey(), DEFAULT_TIMETABLE));
         profile = normalizeProfile(loadValue(profileStorageKey(), {name:"학생", studentId:"", schoolName:DEFAULT_SCHOOL_NAME, grade:"", className:""}));
-        const savedPublicPosts = loadValue(STORAGE_KEYS.posts, DEFAULT_POSTS).filter(post => isSchoolPost(post) && audienceForPost(post).schoolName === profile.schoolName);
+        const savedPublicPosts = loadValue(STORAGE_KEYS.posts, DEFAULT_POSTS).filter(post => isSchoolPost(post) && audienceForPost(post).schoolName === profile.schoolName && !RETIRED_DEMO_POST_IDS.has(post.id));
         const schoolDefaults = DEFAULT_POSTS.filter(post => audienceForPost(post).schoolName === profile.schoolName);
         posts = mergePostLists(schoolDefaults, savedPublicPosts);
         if (!document.getElementById("moderationView").classList.contains("page-hidden")) showView("search");

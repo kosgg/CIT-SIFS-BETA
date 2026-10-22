@@ -34,6 +34,7 @@ credentials*.json
 *service_role*
 *service-role*
 /secrets/
+/supabase/.temp/
 
 # Private key files
 *.pem
