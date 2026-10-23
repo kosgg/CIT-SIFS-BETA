@@ -235,11 +235,8 @@ const STORAGE_KEYS = { posts: "sifs.beta.posts.v1", timetable: "sifs.beta.timeta
       '<option value="class">내 학급 (' + escapeHtml(classLabel) + ')</option>' +
       '<option value="subject">내가 선택한 과목</option>';
     select.value = previous;
-    const privateAudience = select.value !== "school";
-    document.getElementById("imageInput").disabled = privateAudience;
-    document.getElementById("imageHelp").textContent = privateAudience
-      ? "학급·과목 게시글의 이미지 첨부는 아직 지원하지 않습니다."
-      : "JPG, PNG, WebP 이미지 1장(최대 500KB)을 비공개 저장소에 보관합니다. 로그인 후 게시글 공개 범위에 맞는 사용자에게만 표시됩니다.";
+    document.getElementById("imageInput").disabled = false;
+    document.getElementById("imageHelp").textContent = "JPG, PNG, WebP 이미지 1장(최대 500KB)을 비공개 저장소에 보관합니다. 게시글 공개 범위에 맞는 로그인 사용자에게만 표시됩니다.";
     document.getElementById("audienceHelp").textContent = select.value === "school"
       ? `${profile.schoolName}의 학교 전체 공개 게시글입니다.`
       : select.value === "class"
@@ -426,10 +423,14 @@ const STORAGE_KEYS = { posts: "sifs.beta.posts.v1", timetable: "sifs.beta.timeta
     list.querySelectorAll("[data-remove-image]").forEach(button=>button.addEventListener("click",()=>{attachedImages.splice(Number(button.dataset.removeImage),1);renderFileList();}));
   }
   function resetForm() { document.getElementById("postForm").reset();attachedImages=[];renderFileList();updateAudienceControls(); }
+  function makePostImagePath(postId, contentType) {
+    const extension = contentType === "image/png" ? "png" : contentType === "image/webp" ? "webp" : "jpg";
+    const uniqueId = crypto.randomUUID ? crypto.randomUUID() : Date.now() + "-" + Math.random().toString(36).slice(2);
+    return currentUser.id + "/" + postId + "/image-" + uniqueId + "." + extension;
+  }
   async function uploadPostImage(file, postId) {
     if (!currentUser) throw new Error("로그인이 필요합니다.");
-    const extension = file.type === "image/png" ? "png" : file.type === "image/webp" ? "webp" : "jpg";
-    const path = currentUser.id + "/" + postId + "/" + (crypto.randomUUID ? crypto.randomUUID() : Date.now() + "-" + Math.random().toString(36).slice(2)) + "." + extension;
+    const path = makePostImagePath(postId, file.type);
     const result = await supabaseClient.storage.from("post-images").upload(path, file, {contentType:file.type, upsert:false});
     if (result.error) throw result.error;
     return path;
@@ -459,10 +460,6 @@ const STORAGE_KEYS = { posts: "sifs.beta.posts.v1", timetable: "sifs.beta.timeta
     if (audienceType === "subject" && !subject) {
       showToast("과목 공개를 선택하려면 과목을 먼저 지정해 주세요.");
       document.getElementById("postSubject").focus();
-      return;
-    }
-    if (audienceType !== "school" && attachedImages.length) {
-      showToast("학급·과목 게시글 이미지 첨부는 아직 지원하지 않습니다.");
       return;
     }
     const category = label === "학교 공지" ? "official" : label === "수행평가" ? "assessment" : label === "가정통신문" ? "family" : "event";
@@ -1053,11 +1050,9 @@ const STORAGE_KEYS = { posts: "sifs.beta.posts.v1", timetable: "sifs.beta.timeta
       if (existing.data) continue;
       let post = {...localPost};
       const audienceColumns = postAudienceColumns(post);
-      if (audienceColumns.audience_type !== "school" && post.image) throw new Error("학급·과목 게시글의 이미지는 보안상 공유할 수 없습니다.");
       if (/^data:image\/(jpeg|png|webp);base64,/i.test(post.image || "")) {
         const blob = await (await fetch(post.image)).blob();
-        const extension = blob.type === "image/png" ? "png" : blob.type === "image/webp" ? "webp" : "jpg";
-        const path = currentUser.id + "/" + post.id + "/" + (crypto.randomUUID ? crypto.randomUUID() : Date.now() + "-" + Math.random().toString(36).slice(2)) + "." + extension;
+        const path = makePostImagePath(post.id, blob.type);
         const upload = await supabaseClient.storage.from("post-images").upload(path, blob, {contentType:blob.type, upsert:false});
         if (upload.error) throw upload.error;
         post.image = path;
@@ -1171,11 +1166,6 @@ const STORAGE_KEYS = { posts: "sifs.beta.posts.v1", timetable: "sifs.beta.timeta
     document.getElementById("postAudience").addEventListener("change", event => {
       updateAudienceControls();
       if (event.target.value === "subject" && timetable.length === 0) showToast("먼저 나의 학교생활에서 과목을 추가해 주세요.");
-      if (event.target.value !== "school" && attachedImages.length) {
-        attachedImages = [];
-        renderFileList();
-        showToast("학급·과목 게시글에는 이미지 첨부를 지원하지 않아 이미지를 지웠어요.");
-      }
     });
     document.getElementById("importButton").addEventListener("click",()=>document.getElementById("importInput").click());
     document.getElementById("importInput").addEventListener("change",event=>{if(event.target.files[0])importBackup(event.target.files[0]);event.target.value="";});

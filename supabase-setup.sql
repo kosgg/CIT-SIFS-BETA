@@ -215,6 +215,7 @@ create policy "Readers can access posts in their audience"
     or public.is_sifs_moderator()
   );
 
+-- Audience-specific post images stay private; image reads are authorized by the Storage policy below.
 drop policy if exists "Signed-in users can create posts as themselves" on public.posts;
 create policy "Signed-in users can create posts as themselves"
   on public.posts for insert to authenticated
@@ -223,7 +224,6 @@ create policy "Signed-in users can create posts as themselves"
     and moderation_status = 'published'
     and (public.sifs_can_read_post(audience_type, target_school, target_grade, target_class, target_subject)
       or public.is_sifs_moderator())
-    and (audience_type = 'school' or coalesce(post->>'image', '') = '')
   );
 
 drop policy if exists "Authors can update their posts" on public.posts;
@@ -234,7 +234,6 @@ create policy "Authors can update their posts"
     auth.uid() = user_id
     and (public.sifs_can_read_post(audience_type, target_school, target_grade, target_class, target_subject)
       or public.is_sifs_moderator())
-    and (audience_type = 'school' or coalesce(post->>'image', '') = '')
   );
 
 drop policy if exists "Authors can delete their posts" on public.posts;
