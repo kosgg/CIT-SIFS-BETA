@@ -429,8 +429,8 @@ const STORAGE_KEYS = { posts: "sifs.beta.posts.v1", timetable: "sifs.beta.timeta
   async function uploadPostImage(file, postId) {
     if (!currentUser) throw new Error("로그인이 필요합니다.");
     const extension = file.type === "image/png" ? "png" : file.type === "image/webp" ? "webp" : "jpg";
-    const path = currentUser.id + "/" + postId + "/image." + extension;
-    const result = await supabaseClient.storage.from("post-images").upload(path, file, {contentType:file.type, upsert:true});
+    const path = currentUser.id + "/" + postId + "/" + (crypto.randomUUID ? crypto.randomUUID() : Date.now() + "-" + Math.random().toString(36).slice(2)) + "." + extension;
+    const result = await supabaseClient.storage.from("post-images").upload(path, file, {contentType:file.type, upsert:false});
     if (result.error) throw result.error;
     return path;
   }
@@ -1057,8 +1057,8 @@ const STORAGE_KEYS = { posts: "sifs.beta.posts.v1", timetable: "sifs.beta.timeta
       if (/^data:image\/(jpeg|png|webp);base64,/i.test(post.image || "")) {
         const blob = await (await fetch(post.image)).blob();
         const extension = blob.type === "image/png" ? "png" : blob.type === "image/webp" ? "webp" : "jpg";
-        const path = currentUser.id + "/" + post.id + "/image." + extension;
-        const upload = await supabaseClient.storage.from("post-images").upload(path, blob, {contentType:blob.type, upsert:true});
+        const path = currentUser.id + "/" + post.id + "/" + (crypto.randomUUID ? crypto.randomUUID() : Date.now() + "-" + Math.random().toString(36).slice(2)) + "." + extension;
+        const upload = await supabaseClient.storage.from("post-images").upload(path, blob, {contentType:blob.type, upsert:false});
         if (upload.error) throw upload.error;
         post.image = path;
       }
