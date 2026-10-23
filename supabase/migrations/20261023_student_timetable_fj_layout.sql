@@ -3,6 +3,20 @@
 
 begin;
 
+-- Older Supabase projects may not have run the earlier per-slot migration yet.
+-- Create that compatibility table first; existing rows are left untouched.
+create table if not exists public.student_timetable_slots (
+  school_name text not null,
+  grade text not null check (grade in ('1학년','2학년','3학년')),
+  student_id text not null check (length(btrim(student_id)) between 1 and 20),
+  day smallint not null check (day between 1 and 5),
+  period smallint not null check (period between 1 and 7),
+  subject text not null check (length(btrim(subject)) between 1 and 24),
+  code text not null check (code ~ '^[A-J]$'),
+  updated_at timestamptz not null default now(),
+  primary key (school_name, grade, student_id, day, period)
+);
+
 create table if not exists public.student_elective_subjects (
   school_name text not null,
   grade text not null check (grade = '2학년'),
@@ -43,6 +57,30 @@ $$;
 
 revoke all on function public.sifs_student_timetable_matches(text,text,text) from public;
 grant execute on function public.sifs_student_timetable_matches(text,text,text) to authenticated;
+
+alter table public.student_timetable_slots enable row level security;
+grant select, insert, update, delete on public.student_timetable_slots to authenticated;
+
+drop policy if exists "Matching students can read shared electives" on public.student_timetable_slots;
+create policy "Matching students can read shared electives"
+  on public.student_timetable_slots for select to authenticated
+  using (public.sifs_student_timetable_matches(school_name, grade, student_id));
+
+drop policy if exists "Matching students can create shared electives" on public.student_timetable_slots;
+create policy "Matching students can create shared electives"
+  on public.student_timetable_slots for insert to authenticated
+  with check (public.sifs_student_timetable_matches(school_name, grade, student_id));
+
+drop policy if exists "Matching students can update shared electives" on public.student_timetable_slots;
+create policy "Matching students can update shared electives"
+  on public.student_timetable_slots for update to authenticated
+  using (public.sifs_student_timetable_matches(school_name, grade, student_id))
+  with check (public.sifs_student_timetable_matches(school_name, grade, student_id));
+
+drop policy if exists "Matching students can delete shared electives" on public.student_timetable_slots;
+create policy "Matching students can delete shared electives"
+  on public.student_timetable_slots for delete to authenticated
+  using (public.sifs_student_timetable_matches(school_name, grade, student_id));
 
 create or replace function public.sifs_can_read_post(
   p_audience_type text,
