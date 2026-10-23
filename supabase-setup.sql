@@ -20,6 +20,19 @@ create table if not exists public.timetables (
   updated_at timestamptz not null default now()
 );
 
+-- White/common slots are shared per class and per period. Elective codes have no column here,
+-- so F-J data can only be stored in the per-user timetables table above.
+create table if not exists public.class_timetable_slots (
+  school_name text not null,
+  grade text not null,
+  class_name text not null,
+  day smallint not null check (day between 1 and 5),
+  period smallint not null check (period between 1 and 7),
+  subject text not null check (length(btrim(subject)) between 1 and 24),
+  updated_at timestamptz not null default now(),
+  primary key (school_name, grade, class_name, day, period)
+);
+
 -- Audience and moderation metadata are separate from the display JSON so RLS can enforce them.
 alter table public.posts add column if not exists audience_type text not null default 'school';
 alter table public.posts add column if not exists target_school text not null default '서현고등학교';
@@ -199,11 +212,13 @@ grant execute on function public.sifs_set_post_moderation_status(text,text) to a
 alter table public.posts enable row level security;
 alter table public.profiles enable row level security;
 alter table public.timetables enable row level security;
+alter table public.class_timetable_slots enable row level security;
 
 grant select on public.posts to anon, authenticated;
 grant insert, update, delete on public.posts to authenticated;
 grant select, insert, update, delete on public.profiles to authenticated;
 grant select, insert, update, delete on public.timetables to authenticated;
+grant select, insert, update, delete on public.class_timetable_slots to authenticated;
 
 drop policy if exists "Anyone can read posts" on public.posts;
 drop policy if exists "Readers can access posts in their audience" on public.posts;
@@ -319,6 +334,70 @@ drop policy if exists "Users can delete their timetable" on public.timetables;
 create policy "Users can delete their timetable"
   on public.timetables for delete to authenticated
   using (auth.uid() = user_id);
+
+drop policy if exists "Classmates can read their shared timetable" on public.class_timetable_slots;
+create policy "Classmates can read their shared timetable"
+  on public.class_timetable_slots for select to authenticated
+  using (exists (
+    select 1 from public.profiles p
+    where p.user_id = auth.uid()
+      and p.profile ->> 'schoolName' = class_timetable_slots.school_name
+      and p.profile ->> 'grade' = class_timetable_slots.grade
+      and p.profile ->> 'className' = class_timetable_slots.class_name
+  ));
+
+drop policy if exists "Classmates can create their shared timetable" on public.class_timetable_slots;
+create policy "Classmates can create their shared timetable"
+  on public.class_timetable_slots for insert to authenticated
+  with check (exists (
+    select 1 from public.profiles p
+    where p.user_id = auth.uid()
+      and p.profile ->> 'schoolName' = class_timetable_slots.school_name
+      and p.profile ->> 'grade' = class_timetable_slots.grade
+      and p.profile ->> 'className' = class_timetable_slots.class_name
+  ) and length(btrim(subject)) between 1 and 24);
+
+drop policy if exists "Classmates can update their shared timetable" on public.class_timetable_slots;
+create policy "Classmates can update their shared timetable"
+  on public.class_timetable_slots for update to authenticated
+  using (exists (
+    select 1 from public.profiles p
+    where p.user_id = auth.uid()
+      and p.profile ->> 'schoolName' = class_timetable_slots.school_name
+      and p.profile ->> 'grade' = class_timetable_slots.grade
+      and p.profile ->> 'className' = class_timetable_slots.class_name
+  ))
+  with check (exists (
+    select 1 from public.profiles p
+    where p.user_id = auth.uid()
+      and p.profile ->> 'schoolName' = class_timetable_slots.school_name
+      and p.profile ->> 'grade' = class_timetable_slots.grade
+      and p.profile ->> 'className' = class_timetable_slots.class_name
+  ) and length(btrim(subject)) between 1 and 24);
+
+drop policy if exists "Classmates can delete from their shared timetable" on public.class_timetable_slots;
+create policy "Classmates can delete from their shared timetable"
+  on public.class_timetable_slots for delete to authenticated
+  using (exists (
+    select 1 from public.profiles p
+    where p.user_id = auth.uid()
+      and p.profile ->> 'schoolName' = class_timetable_slots.school_name
+      and p.profile ->> 'grade' = class_timetable_slots.grade
+      and p.profile ->> 'className' = class_timetable_slots.class_name
+  ));
+
+-- Enable live updates when the Supabase Realtime publication is available.
+do $$
+begin
+  if exists (select 1 from pg_publication where pubname = 'supabase_realtime')
+     and not exists (
+       select 1 from pg_publication_tables
+       where pubname = 'supabase_realtime' and schemaname = 'public' and tablename = 'class_timetable_slots'
+     ) then
+    execute 'alter publication supabase_realtime add table public.class_timetable_slots';
+  end if;
+end;
+$$;
 
 insert into storage.buckets (id, name, public)
 values ('post-images', 'post-images', false)
