@@ -322,13 +322,27 @@ create policy "Users can delete their timetable"
   using (auth.uid() = user_id);
 
 insert into storage.buckets (id, name, public)
-values ('post-images', 'post-images', true)
-on conflict (id) do update set public = true;
+values ('post-images', 'post-images', false)
+on conflict (id) do update set public = false;
 
 drop policy if exists "Anyone can read post images" on storage.objects;
-create policy "Anyone can read post images"
-  on storage.objects for select to anon, authenticated
-  using (bucket_id = 'post-images');
+drop policy if exists "Users can read images in visible posts" on storage.objects;
+create policy "Users can read images in visible posts"
+  on storage.objects for select to authenticated
+  using (
+    bucket_id = 'post-images'
+    and exists (
+      select 1
+      from public.posts p
+      where p.id = (storage.foldername(name))[2]
+        and p.user_id::text = (storage.foldername(name))[1]
+        and (
+          (p.moderation_status = 'published'
+            and public.sifs_can_read_post(p.audience_type, p.target_school, p.target_grade, p.target_class, p.target_subject))
+          or public.is_sifs_moderator()
+        )
+    )
+  );
 
 drop policy if exists "Users can upload their own post images" on storage.objects;
 create policy "Users can upload their own post images"

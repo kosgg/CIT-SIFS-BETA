@@ -73,13 +73,13 @@ supabase functions deploy school-information --project-ref wljqmhwshmbcaitfiudc
 - 학교 전체 게시글은 같은 학교의 계정에 표시됩니다. 로그인하지 않은 방문자는 서현고 전체 게시글을 볼 수 있습니다.
 - 학급 게시글은 학교·학년·반이 모두 일치하는 로그인 사용자에게 표시됩니다.
 - 과목 게시글은 같은 학교이고 본인 시간표에 해당 과목이 있는 로그인 사용자에게 표시됩니다.
-- 공개 이미지 URL을 비공개 게시글에서 노출하지 않도록 학급·과목 게시글에는 이미지 첨부를 막았습니다. 학교 전체 게시글에는 이미지 한 장을 첨부할 수 있습니다.
+- 이미지는 비공개 `post-images` 버킷에 저장하고, 게시글을 볼 수 있는 로그인 사용자에게만 1시간짜리 임시 URL을 제공합니다. 로그인하지 않은 방문자에게는 이미지가 표시되지 않습니다. 학급·과목 게시글의 이미지 첨부는 아직 지원하지 않습니다.
 - 신고는 로그인한 사용자만 제출할 수 있습니다. 신고 목록은 지정 운영자 계정 `hongsg821@gmail.com`만 볼 수 있고, 신고자에게 이메일 알림은 전송하지 않습니다.
 
 이전 공개 이미지가 비공개 게시글에 연결되어 있는지 확인하려면 SQL Editor에서 실행합니다.
 
 ~~~sql
-select id, post->>'title' as title, post->>'audience' as audience, post->>'image' as public_image_url
+select id, post->>'title' as title, post->>'audience' as audience, post->>'image' as image_reference
 from public.posts
 where audience_type <> 'school'
   and coalesce(post->>'image', '') <> '';

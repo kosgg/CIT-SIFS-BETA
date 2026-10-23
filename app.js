@@ -109,6 +109,7 @@ const STORAGE_KEYS = { posts: "sifs.beta.posts.v1", timetable: "sifs.beta.timeta
   }
   let posts = loadValue(STORAGE_KEYS.posts, DEFAULT_POSTS)
     .filter(post => isSchoolPost(post) && !RETIRED_DEMO_POST_IDS.has(post.id));
+  const signedPostImageUrls = new Map();
   let schoolNoticePosts = [];
   let schoolNoticeSourceName = "서현고등학교";
   let schoolScheduleEvents = [];
@@ -150,6 +151,28 @@ const STORAGE_KEYS = { posts: "sifs.beta.posts.v1", timetable: "sifs.beta.timeta
     if (typeof value === "string" && /^data:image\/(jpeg|png|webp);base64,/i.test(value)) return value;
     return getSafeUrl(value);
   }
+  function postImageObjectPath(value) {
+    if (typeof value !== "string" || !value.trim() || /^data:image\//i.test(value)) return "";
+    try {
+      const url = new URL(value);
+      const base = new URL(SUPABASE_URL);
+      const match = url.origin === base.origin
+        ? url.pathname.match(/^\/storage\/v1\/object\/(?:public|authenticated|sign)\/post-images\/(.+)$/)
+        : null;
+      return match ? decodeURIComponent(match[1]) : "";
+    } catch (error) {
+      if (/^[a-z][a-z0-9+.-]*:/i.test(value) || value.startsWith("//")) return "";
+      return value.trim().replace(/^\/+/, "").split(/[?#]/, 1)[0];
+    }
+  }
+  function getPostImageUrl(value) {
+    const safe = getSafeImage(value);
+    if (safe.startsWith("data:")) return safe;
+    const path = postImageObjectPath(value);
+    if (!path) return safe;
+    const signed = signedPostImageUrls.get(path);
+    return signed && signed.expiresAt > Date.now() + 30000 ? signed.url : "";
+  }
   function formatDate(value, options = {}) {
     if (!value) return "";
     const date = new Date(value);
@@ -186,7 +209,11 @@ const STORAGE_KEYS = { posts: "sifs.beta.posts.v1", timetable: "sifs.beta.timeta
       document.getElementById("resetSearch").addEventListener("click", resetSearch);
       return;
     }
-    list.innerHTML = visible.map(post => `<article class="post-row" data-post-id="${escapeHtml(post.id)}">${getSafeImage(post.image) ? `<img class="post-thumb" src="${getSafeImage(post.image)}" alt="게시글 첨부 이미지">` : ""}<div><span class="tag">${escapeHtml(getCategoryLabel(post))}</span><span class="tag ${getTagClass(post)}">${escapeHtml(post.origin || "직접 등록")}</span><span class="tag gray">${escapeHtml(audienceLabel(post))}</span>${post.moderation_status === "hidden" ? `<span class="tag red">숨김</span>` : ""}</div><h3>${escapeHtml(post.title)}</h3><p>${escapeHtml(post.body).replace(/\n/g," ").slice(0,100)}${post.body.length > 100 ? "…" : ""}</p><div class="post-meta">${escapeHtml(post.sourceName || post.author || "학생 등록")} · ${escapeHtml(post.author || "")} · ${formatDate(post.createdAt,{time:true})}</div><span class="post-arrow">›</span></article>`).join("");
+    list.innerHTML = visible.map(post => {
+      const imageUrl = getPostImageUrl(post.image);
+      const imageNote = postImageObjectPath(post.image) && !imageUrl ? `<span class="tag gray">로그인 후 이미지 표시</span>` : "";
+      return `<article class="post-row" data-post-id="${escapeHtml(post.id)}">${imageUrl ? `<img class="post-thumb" src="${escapeHtml(imageUrl)}" alt="게시글 첨부 이미지">` : imageNote}<div><span class="tag">${escapeHtml(getCategoryLabel(post))}</span><span class="tag ${getTagClass(post)}">${escapeHtml(post.origin || "직접 등록")}</span><span class="tag gray">${escapeHtml(audienceLabel(post))}</span>${post.moderation_status === "hidden" ? `<span class="tag red">숨김</span>` : ""}</div><h3>${escapeHtml(post.title)}</h3><p>${escapeHtml(post.body).replace(/\n/g," ").slice(0,100)}${post.body.length > 100 ? "…" : ""}</p><div class="post-meta">${escapeHtml(post.sourceName || post.author || "학생 등록")} · ${escapeHtml(post.author || "")} · ${formatDate(post.createdAt,{time:true})}</div><span class="post-arrow">›</span></article>`;
+    }).join("");
     list.querySelectorAll("[data-post-id]").forEach(row => row.addEventListener("click", () => showDetail(row.dataset.postId)));
   }
   function getUpcomingPosts() {
@@ -211,8 +238,8 @@ const STORAGE_KEYS = { posts: "sifs.beta.posts.v1", timetable: "sifs.beta.timeta
     const privateAudience = select.value !== "school";
     document.getElementById("imageInput").disabled = privateAudience;
     document.getElementById("imageHelp").textContent = privateAudience
-      ? "학급·과목 게시글의 이미지 공개 URL은 누구나 열 수 있어 이미지 첨부를 막았습니다."
-      : "학교 전체 공개 게시글에 JPG, PNG, WebP 이미지 1장을 첨부할 수 있어요. 파일당 최대 500KB.";
+      ? "학급·과목 게시글의 이미지 첨부는 아직 지원하지 않습니다."
+      : "JPG, PNG, WebP 이미지 1장(최대 500KB)을 비공개 저장소에 보관합니다. 로그인 후 게시글 공개 범위에 맞는 사용자에게만 표시됩니다.";
     document.getElementById("audienceHelp").textContent = select.value === "school"
       ? `${profile.schoolName}의 학교 전체 공개 게시글입니다.`
       : select.value === "class"
@@ -290,13 +317,19 @@ const STORAGE_KEYS = { posts: "sifs.beta.posts.v1", timetable: "sifs.beta.timeta
     if (name === "moderation") renderReportQueue();
     window.scrollTo({top:0,behavior:"smooth"});
   }
-  function showDetail(postId) {
+  function showDetail(postId, allowImageRefresh = true) {
     const post = allFeedPosts().find(item => item.id === postId); if (!post) return;
     activePostId = postId;
+    if (allowImageRefresh && currentUser && postImageObjectPath(post.image) && !getPostImageUrl(post.image)) {
+      void refreshPostImageUrls().then(() => {
+        if (activePostId === postId) showDetail(postId, false);
+      });
+      return;
+    }
     const detail = document.getElementById("detailView");
     const dueDate = post.dueAt ? new Date(post.dueAt) : null;
     const related = allFeedPosts().filter(item => item.id !== post.id && (item.subject && item.subject === post.subject || item.category === post.category)).slice(0,3);
-    detail.innerHTML = `<div class="detail-back"><button class="subtle-link" id="backToSearch">← 전체 소식으로 돌아가기</button><span>통합 검색　/　${escapeHtml(getCategoryLabel(post))}</span></div><div class="detail-layout"><article class="card article"><div><span class="tag">${escapeHtml(getCategoryLabel(post))}</span><span class="tag green">${escapeHtml(post.origin || "직접 등록")}</span><span class="tag gray">${escapeHtml(audienceLabel(post))}</span></div><h1>${escapeHtml(post.title)}</h1><div class="article-meta"><span class="avatar" style="display:inline-grid;vertical-align:middle;margin-right:6px">${escapeHtml((post.author||"학생").slice(0,1))}</span>${escapeHtml(post.author || "학생 등록")}　·　${escapeHtml(post.sourceName||"로컬 베타")}　·　${formatDate(post.createdAt,{time:true})}</div>${dueDate?`<div class="due-banner"><div><small style="color:var(--blue)">▦　보고서 제출 기한</small><b>${formatDate(post.dueAt,{time:true})}까지</b></div><span class="dday">${getDday(post.dueAt)}</span></div>`:""}${getSafeImage(post.image)?`<img class="hero-image" src="${getSafeImage(post.image)}" alt="게시글 첨부 이미지">`:""}<div class="article-body">${escapeHtml(post.body)}</div>${post.attachments&&post.attachments.length?post.attachments.map(file=>`<div class="attachment"><span>▤　${escapeHtml(file)}</span><span style="color:var(--muted)">첨부 파일</span></div>`).join(""):""}<div class="detail-actions"><span>수업 관련 질문은 담당 선생님께 문의해 주세요.</span><button class="outline" id="restorePostButton" type="button">게시글 다시 공개</button><button class="outline" id="reportPostButton" type="button">⚑ 게시글 신고</button></div></article><aside class="right-stack">${post.subject?`<section class="card side-card"><h2>수행평가 한눈에 보기</h2><p>과목 <b style="float:right;color:var(--ink)">${escapeHtml(post.subject)}</b></p><p>대상 <b style="float:right;color:var(--ink)">${escapeHtml(post.audience||"전체")}</b></p><p>제출 방식 <b style="float:right;color:var(--ink)">${escapeHtml(post.sourceName||"게시글 확인")}</b></p><button class="outline" data-go="timetable">▦　내 수행평가 일정 보기</button></section>`:""}<section class="card side-card"><h2>원문 정보</h2><div class="source-row"><span class="source-dot">↗</span>${escapeHtml(post.sourceName||"학생 등록")}</div><p>이 정보는 ${escapeHtml(post.origin||"기기 내 등록")}된 내용입니다. 자세한 사항은 원문 또는 작성자에게 확인해 주세요.</p>${getSafeUrl(post.sourceUrl)?`<a class="primary" style="display:inline-block;margin:3px 0" href="${escapeHtml(getSafeUrl(post.sourceUrl))}" target="_blank" rel="noreferrer">↗ 원문 보기</a>`:`<span class="tag orange">로컬 베타 게시글</span>`}<p>등록 일시 ${formatDate(post.createdAt,{time:true})}</p></section><section class="card side-card blue-panel"><span style="font-size:17px;color:var(--blue)">◷</span><h2 style="margin-top:8px">정보가 달라졌나요?</h2><p>잘못된 일정이나 내용을 발견하면 작성자에게 알려 주세요.</p></section>${related.length?`<section class="card side-card"><h2>함께 보면 좋은 정보</h2>${related.map(item=>`<div class="upcoming-item" data-post-id="${escapeHtml(item.id)}"><button class="subtle-link" data-open-related="${escapeHtml(item.id)}">${escapeHtml(item.title)}　›</button></div>`).join("")}</section>`:""}</aside></div>`;
+    detail.innerHTML = `<div class="detail-back"><button class="subtle-link" id="backToSearch">← 전체 소식으로 돌아가기</button><span>통합 검색　/　${escapeHtml(getCategoryLabel(post))}</span></div><div class="detail-layout"><article class="card article"><div><span class="tag">${escapeHtml(getCategoryLabel(post))}</span><span class="tag green">${escapeHtml(post.origin || "직접 등록")}</span><span class="tag gray">${escapeHtml(audienceLabel(post))}</span></div><h1>${escapeHtml(post.title)}</h1><div class="article-meta"><span class="avatar" style="display:inline-grid;vertical-align:middle;margin-right:6px">${escapeHtml((post.author||"학생").slice(0,1))}</span>${escapeHtml(post.author || "학생 등록")}　·　${escapeHtml(post.sourceName||"로컬 베타")}　·　${formatDate(post.createdAt,{time:true})}</div>${dueDate?`<div class="due-banner"><div><small style="color:var(--blue)">▦　보고서 제출 기한</small><b>${formatDate(post.dueAt,{time:true})}까지</b></div><span class="dday">${getDday(post.dueAt)}</span></div>`:""}${getPostImageUrl(post.image)?`<img class="hero-image" src="${escapeHtml(getPostImageUrl(post.image))}" alt="게시글 첨부 이미지">`:postImageObjectPath(post.image)&&!currentUser?`<span class="tag gray">로그인 후 첨부 이미지 확인</span>`:""}<div class="article-body">${escapeHtml(post.body)}</div>${post.attachments&&post.attachments.length?post.attachments.map(file=>`<div class="attachment"><span>▤　${escapeHtml(file)}</span><span style="color:var(--muted)">첨부 파일</span></div>`).join(""):""}<div class="detail-actions"><span>수업 관련 질문은 담당 선생님께 문의해 주세요.</span><button class="outline" id="restorePostButton" type="button">게시글 다시 공개</button><button class="outline" id="reportPostButton" type="button">⚑ 게시글 신고</button></div></article><aside class="right-stack">${post.subject?`<section class="card side-card"><h2>수행평가 한눈에 보기</h2><p>과목 <b style="float:right;color:var(--ink)">${escapeHtml(post.subject)}</b></p><p>대상 <b style="float:right;color:var(--ink)">${escapeHtml(post.audience||"전체")}</b></p><p>제출 방식 <b style="float:right;color:var(--ink)">${escapeHtml(post.sourceName||"게시글 확인")}</b></p><button class="outline" data-go="timetable">▦　내 수행평가 일정 보기</button></section>`:""}<section class="card side-card"><h2>원문 정보</h2><div class="source-row"><span class="source-dot">↗</span>${escapeHtml(post.sourceName||"학생 등록")}</div><p>이 정보는 ${escapeHtml(post.origin||"기기 내 등록")}된 내용입니다. 자세한 사항은 원문 또는 작성자에게 확인해 주세요.</p>${getSafeUrl(post.sourceUrl)?`<a class="primary" style="display:inline-block;margin:3px 0" href="${escapeHtml(getSafeUrl(post.sourceUrl))}" target="_blank" rel="noreferrer">↗ 원문 보기</a>`:`<span class="tag orange">로컬 베타 게시글</span>`}<p>등록 일시 ${formatDate(post.createdAt,{time:true})}</p></section><section class="card side-card blue-panel"><span style="font-size:17px;color:var(--blue)">◷</span><h2 style="margin-top:8px">정보가 달라졌나요?</h2><p>잘못된 일정이나 내용을 발견하면 작성자에게 알려 주세요.</p></section>${related.length?`<section class="card side-card"><h2>함께 보면 좋은 정보</h2>${related.map(item=>`<div class="upcoming-item" data-post-id="${escapeHtml(item.id)}"><button class="subtle-link" data-open-related="${escapeHtml(item.id)}">${escapeHtml(item.title)}　›</button></div>`).join("")}</section>`:""}</aside></div>`;
     detail.querySelector("#backToSearch").addEventListener("click", () => showView("search"));
     if (!post.persisted) detail.querySelector("#reportPostButton").classList.add("page-hidden");
     if (!isModerator || post.moderation_status !== "hidden") detail.querySelector("#restorePostButton").classList.add("page-hidden");
@@ -399,7 +432,7 @@ const STORAGE_KEYS = { posts: "sifs.beta.posts.v1", timetable: "sifs.beta.timeta
     const path = currentUser.id + "/" + postId + "/image." + extension;
     const result = await supabaseClient.storage.from("post-images").upload(path, file, {contentType:file.type, upsert:true});
     if (result.error) throw result.error;
-    return supabaseClient.storage.from("post-images").getPublicUrl(path).data.publicUrl;
+    return path;
   }
   async function submitPost(event) {
     event.preventDefault();
@@ -429,7 +462,7 @@ const STORAGE_KEYS = { posts: "sifs.beta.posts.v1", timetable: "sifs.beta.timeta
       return;
     }
     if (audienceType !== "school" && attachedImages.length) {
-      showToast("학급·과목 게시글은 공개 이미지 주소가 새어나가지 않도록 이미지 없이 등록해 주세요.");
+      showToast("학급·과목 게시글 이미지 첨부는 아직 지원하지 않습니다.");
       return;
     }
     const category = label === "학교 공지" ? "official" : label === "수행평가" ? "assessment" : label === "가정통신문" ? "family" : "event";
@@ -468,6 +501,7 @@ const STORAGE_KEYS = { posts: "sifs.beta.posts.v1", timetable: "sifs.beta.timeta
       if (result.error) throw result.error;
       newPost.persisted = true;
       posts.unshift(newPost);
+      await refreshPostImageUrls();
       savePublicPostCache();
       resetForm();
       renderUpcoming();
@@ -775,6 +809,10 @@ const STORAGE_KEYS = { posts: "sifs.beta.posts.v1", timetable: "sifs.beta.timeta
     }, SCHOOL_NOTICE_REFRESH_INTERVAL_MS);
     document.addEventListener("visibilitychange", () => {
       if (document.visibilityState !== "visible") return;
+      void refreshPostImageUrls().then(() => {
+        if (!document.getElementById("searchView").classList.contains("page-hidden")) renderPostList();
+        if (!document.getElementById("detailView").classList.contains("page-hidden") && activePostId) showDetail(activePostId);
+      });
       if (Date.now() - lastSchoolNoticeAttemptAt >= SCHOOL_NOTICE_REFRESH_INTERVAL_MS) void loadSchoolNotices(true);
       if (Date.now() - lastSchoolInformationAttemptAt >= SCHOOL_NOTICE_REFRESH_INTERVAL_MS) void loadSchoolInformation(true);
     });
@@ -966,10 +1004,37 @@ const STORAGE_KEYS = { posts: "sifs.beta.posts.v1", timetable: "sifs.beta.timeta
     const publicCache = posts.filter(post => isSchoolPost(post) && audienceForPost(post).schoolName === profile.schoolName);
     const schoolDefaults = DEFAULT_POSTS.filter(post => audienceForPost(post).schoolName === profile.schoolName);
     posts = mergePostLists(schoolDefaults, publicCache, remotePosts);
+    await refreshPostImageUrls();
     savePublicPostCache();
     renderPostList();
     renderUpcoming();
     return true;
+  }
+  async function refreshPostImageUrls() {
+    if (!currentUser || !supabaseClient) {
+      signedPostImageUrls.clear();
+      return;
+    }
+    const paths = [...new Set(posts.map(post => postImageObjectPath(post.image)).filter(Boolean))];
+    const pathSet = new Set(paths);
+    for (const path of signedPostImageUrls.keys()) {
+      if (!pathSet.has(path)) signedPostImageUrls.delete(path);
+    }
+    const refreshBefore = Date.now() + 30000;
+    await Promise.all(paths.map(async path => {
+      const cached = signedPostImageUrls.get(path);
+      if (cached && cached.expiresAt > refreshBefore) return;
+      try {
+        const {data, error} = await supabaseClient.storage.from("post-images").createSignedUrl(path, 3600);
+        if (error || !data?.signedUrl) {
+          signedPostImageUrls.delete(path);
+          return;
+        }
+        signedPostImageUrls.set(path, {url:data.signedUrl, expiresAt:Date.now() + 3600000});
+      } catch (error) {
+        signedPostImageUrls.delete(path);
+      }
+    }));
   }
   async function syncUserData() {
     if (!currentUser || !supabaseClient) return;
@@ -995,7 +1060,7 @@ const STORAGE_KEYS = { posts: "sifs.beta.posts.v1", timetable: "sifs.beta.timeta
         const path = currentUser.id + "/" + post.id + "/image." + extension;
         const upload = await supabaseClient.storage.from("post-images").upload(path, blob, {contentType:blob.type, upsert:true});
         if (upload.error) throw upload.error;
-        post.image = supabaseClient.storage.from("post-images").getPublicUrl(path).data.publicUrl;
+        post.image = path;
       }
       const inserted = await supabaseClient.from("posts").insert({id:post.id, user_id:currentUser.id, post, ...audienceColumns});
       if (inserted.error) throw inserted.error;
@@ -1026,6 +1091,7 @@ const STORAGE_KEYS = { posts: "sifs.beta.posts.v1", timetable: "sifs.beta.timeta
       if (payload.eventType === "DELETE") posts = posts.filter(post => post.id !== payload.old.id);
       else if (payload.new && payload.new.post) posts = mergePostLists(posts, [postFromRow(payload.new)]);
       savePublicPostCache();
+      void refreshPostImageUrls().then(() => renderPostList());
       renderPostList();renderUpcoming();
     }).subscribe();
   }
@@ -1108,7 +1174,7 @@ const STORAGE_KEYS = { posts: "sifs.beta.posts.v1", timetable: "sifs.beta.timeta
       if (event.target.value !== "school" && attachedImages.length) {
         attachedImages = [];
         renderFileList();
-        showToast("공개 범위를 좁혀 선택한 이미지를 지웠어요.");
+        showToast("학급·과목 게시글에는 이미지 첨부를 지원하지 않아 이미지를 지웠어요.");
       }
     });
     document.getElementById("importButton").addEventListener("click",()=>document.getElementById("importInput").click());
@@ -1128,6 +1194,7 @@ const STORAGE_KEYS = { posts: "sifs.beta.posts.v1", timetable: "sifs.beta.timeta
       currentUser = session?.user || null;
       updateAuthButton();
       if (event === "SIGNED_IN" && currentUser && currentUser.id !== previousUserId) {
+        signedPostImageUrls.clear();
         isModerator = false;
         updateModeratorNav();
         profile = normalizeProfile(loadValue(profileStorageKey(currentUser.id), profileForUser(currentUser)));
@@ -1137,6 +1204,7 @@ const STORAGE_KEYS = { posts: "sifs.beta.posts.v1", timetable: "sifs.beta.timeta
         window.setTimeout(() => finishCloudLogin(), 0);
       }
       if (event === "SIGNED_OUT") {
+        signedPostImageUrls.clear();
         if (realtimeChannel) { supabaseClient.removeChannel(realtimeChannel); realtimeChannel = null; }
         isModerator = false;
         updateModeratorNav();
@@ -1145,7 +1213,8 @@ const STORAGE_KEYS = { posts: "sifs.beta.posts.v1", timetable: "sifs.beta.timeta
         const savedPublicPosts = loadValue(STORAGE_KEYS.posts, DEFAULT_POSTS).filter(post => isSchoolPost(post) && audienceForPost(post).schoolName === profile.schoolName && !RETIRED_DEMO_POST_IDS.has(post.id));
         const schoolDefaults = DEFAULT_POSTS.filter(post => audienceForPost(post).schoolName === profile.schoolName);
         posts = mergePostLists(schoolDefaults, savedPublicPosts);
-        if (!document.getElementById("moderationView").classList.contains("page-hidden")) showView("search");
+        if (!document.getElementById("moderationView").classList.contains("page-hidden") || !document.getElementById("detailView").classList.contains("page-hidden")) showView("search");
+        else renderPostList();
         renderTimetable();
       }
     });
