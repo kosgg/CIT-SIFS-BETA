@@ -2,7 +2,7 @@ import { createServer } from "node:http";
 import { readFile } from "node:fs/promises";
 import { extname, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
-import { BOARD_URL, fetchLatestNotices } from "./supabase/functions/_shared/seohyun-notices.mjs";
+import { BOARD_URL, FAMILY_LETTERS_BOARD_URL, fetchLatestFamilyLetters, fetchLatestNotices } from "./supabase/functions/_shared/seohyun-notices.mjs";
 import { fetchSchoolInformation } from "./supabase/functions/_shared/seohyun-school-data.mjs";
 
 const ROOT = resolve(fileURLToPath(new URL(".", import.meta.url)));
@@ -35,6 +35,23 @@ const server = createServer(async (request, response) => {
     } catch (_error) {
       response.writeHead(502, { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" });
       response.end(JSON.stringify({ error: "학교 공식 공지를 가져오지 못했습니다.", sourceUrl: BOARD_URL }));
+    }
+    return;
+  }
+
+  if (pathname === "/api/school-family-letters") {
+    if (request.method !== "GET") {
+      response.writeHead(405, { "Content-Type": "application/json; charset=utf-8", Allow: "GET" });
+      response.end(JSON.stringify({ error: "Method not allowed" }));
+      return;
+    }
+    try {
+      const payload = await fetchLatestFamilyLetters();
+      response.writeHead(200, { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "public, max-age=1800" });
+      response.end(JSON.stringify(payload));
+    } catch (_error) {
+      response.writeHead(502, { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" });
+      response.end(JSON.stringify({ error: "학교 공식 가정통신문을 가져오지 못했습니다.", sourceUrl: FAMILY_LETTERS_BOARD_URL }));
     }
     return;
   }

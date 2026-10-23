@@ -2,6 +2,10 @@
 # This endpoint returns only public announcements from the fixed official school page.
 verify_jwt = false
 
+[functions.school-family-letters]
+# This endpoint returns only public family letters from the fixed official school page.
+verify_jwt = false
+
 [functions.school-information]
 # This endpoint returns only public school calendar and meal information.
 verify_jwt = false

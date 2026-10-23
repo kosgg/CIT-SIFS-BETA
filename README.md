@@ -13,6 +13,7 @@
 - 앱에 포함되어 있던 기본 데모 게시글은 현재 코드에서 제거했습니다. 사용자가 직접 만든 테스트 게시글은 별도로 남아 있을 수 있습니다.
 - 최신 앱 코드와 이 진행 상황 문서는 GitHub `main` 브랜치에서 관리합니다.
 - 학급·과목 게시글 이미지 첨부를 코드와 공개 범위 정책에 추가했습니다. 실서비스 반영에는 최신 코드 배포와 업데이트된 `supabase-setup.sql` 실행이 필요합니다.
+- 서현고 공식 가정통신문을 `가정통신문` 분류와 통합 검색 피드에 표시하는 코드와 `school-family-letters` Edge Function을 추가했습니다. 이 함수와 웹 코드가 각각 배포된 뒤 공개 사이트에 반영됩니다.
 
 ### 다음에 할 일
 
@@ -57,13 +58,14 @@ node dev-server.mjs
 
 ## 공지·학사일정·급식 함수 배포
 
-`supabase/functions/school-notices/index.ts`는 서현고 공식 공지사항을, `supabase/functions/school-information/index.ts`는 서현고 학사일정과 급식표를 가져옵니다. 앱은 30분마다 갱신하며, 함수가 배포되지 않으면 공개 사이트에서 이 정보가 갱신되지 않습니다.
+`supabase/functions/school-notices/index.ts`는 서현고 공식 공지사항을, `supabase/functions/school-family-letters/index.ts`는 가정통신문을, `supabase/functions/school-information/index.ts`는 서현고 학사일정과 급식표를 가져옵니다. 앱은 30분마다 갱신하며, 각 함수가 배포되지 않으면 공개 사이트에서 해당 정보가 갱신되지 않습니다.
 
 Supabase CLI가 설치된 환경에서 프로젝트 폴더를 열고 실행합니다.
 
 ~~~powershell
 supabase login
 supabase functions deploy school-notices --project-ref wljqmhwshmbcaitfiudc
+supabase functions deploy school-family-letters --project-ref wljqmhwshmbcaitfiudc
 supabase functions deploy school-information --project-ref wljqmhwshmbcaitfiudc
 ~~~
 

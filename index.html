@@ -31,6 +31,10 @@
         <div class="school-notice-copy"><span class="live-dot" aria-hidden="true"></span><div><strong>서현고등학교 공식 공지사항</strong><small id="schoolNoticeStatus" role="status" aria-live="polite">Supabase 공지 연동을 준비하고 있습니다.</small></div></div>
         <div class="school-notice-actions"><a class="outline" href="https://seohyun-h.goesn.kr/seohyun-h/na/ntt/selectNttList.do?bbsId=15547&amp;mi=19943" target="_blank" rel="noreferrer">원문 게시판</a><button class="outline" id="refreshSchoolNotices" type="button">공지 새로고침</button></div>
       </section>
+      <section id="familyLetterSection" class="school-notice-feed" aria-label="실시간 가정통신문">
+        <div class="school-notice-copy"><span class="live-dot" aria-hidden="true"></span><div><strong>서현고등학교 공식 가정통신문</strong><small id="familyLetterStatus" role="status" aria-live="polite">Supabase 가정통신문 연동을 준비하고 있습니다.</small></div></div>
+        <div class="school-notice-actions"><a class="outline" href="https://seohyun-h.goesn.kr/seohyun-h/na/ntt/selectNttList.do?bbsId=15548&amp;mi=19944" target="_blank" rel="noreferrer">원문 게시판</a><button class="outline" id="refreshFamilyLetters" type="button">통신문 새로고침</button></div>
+      </section>
       <div id="schoolDataSection" class="school-data-grid" aria-label="서현고 학사정보">
         <section class="card school-data-card" aria-labelledby="schoolScheduleHeading">
           <div class="school-data-head"><div><h2 id="schoolScheduleHeading">다가오는 학사일정</h2><small id="schoolScheduleStatus" role="status" aria-live="polite">서현고 공식 일정을 불러오고 있어요.</small></div><a class="subtle-link" href="https://seohyun-h.goesn.kr/seohyun-h/ps/schdul/selectSchdulMainList.do?mi=19746" target="_blank" rel="noreferrer">전체 일정 →</a></div>
@@ -78,6 +82,6 @@
 <div id="toast" class="toast page-hidden" role="status"></div>
 <div id="modalRoot"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="./app.js?v=20261023-class-subject-image-attachments"></script>
+<script src="./app.js?v=20261023-family-letter-feed"></script>
 </body>
 </html>

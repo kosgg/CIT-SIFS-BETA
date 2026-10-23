@@ -67,7 +67,7 @@ const STORAGE_KEYS = { posts: "sifs.beta.posts.v1", timetable: "sifs.beta.timeta
   }
   function isSchoolPost(post) { return audienceForPost(post).type === "school"; }
   function audienceLabel(post) {
-    if (post?.officialSource) return "학교 공지";
+    if (post?.officialSource) return post.category === "family" ? `${DEFAULT_SCHOOL_NAME} 전체` : "학교 공지";
     const audience = audienceForPost(post);
     if (audience.type === "class") return `${audience.schoolName} · ${audience.grade} ${audience.className}`;
     if (audience.type === "subject") return audience.subject ? `${audience.schoolName} · 과목: ${audience.subject}` : `${audience.schoolName} · 과목 대상`;
@@ -112,12 +112,16 @@ const STORAGE_KEYS = { posts: "sifs.beta.posts.v1", timetable: "sifs.beta.timeta
   const signedPostImageUrls = new Map();
   let schoolNoticePosts = [];
   let schoolNoticeSourceName = "서현고등학교";
+  let familyLetterPosts = [];
+  let familyLetterSourceName = "서현고등학교";
   let schoolScheduleEvents = [];
   let schoolMealDays = [];
   let schoolInformationLoading = false;
   let lastSchoolInformationAttemptAt = 0;
   let schoolNoticeLoading = false;
   let lastSchoolNoticeAttemptAt = 0;
+  let familyLetterLoading = false;
+  let lastFamilyLetterAttemptAt = 0;
   let schoolNoticeRefreshTimer = 0;
   let timetable = normalizeTimetable(loadValue(timetableStorageKey(), DEFAULT_TIMETABLE));
   let profile = normalizeProfile(loadValue(profileStorageKey(), {name:"학생", studentId:"", schoolName:DEFAULT_SCHOOL_NAME, grade:"", className:""}));
@@ -188,7 +192,7 @@ const STORAGE_KEYS = { posts: "sifs.beta.posts.v1", timetable: "sifs.beta.timeta
   }
   function getCategoryLabel(post) { return post.categoryLabel || CATEGORY_LABELS[post.category] || post.category || "학교 소식"; }
   function getTagClass(post) { return post.origin === "직접 등록" ? "orange" : ["자동 수집", "실시간 연동"].includes(post.origin) ? "green" : "gray"; }
-  function allFeedPosts() { return mergePostLists(posts, schoolNoticePosts); }
+  function allFeedPosts() { return mergePostLists(posts, schoolNoticePosts, familyLetterPosts); }
   function getVisiblePosts() {
     const query = document.getElementById("searchInput").value.trim().toLocaleLowerCase("ko-KR");
     const sort = document.getElementById("sortSelect").value;
@@ -278,6 +282,7 @@ const STORAGE_KEYS = { posts: "sifs.beta.posts.v1", timetable: "sifs.beta.timeta
     document.getElementById("schoolNameLabel").textContent = profile.schoolName;
     const hasSeohyeonOfficialFeed = profile.schoolName === DEFAULT_SCHOOL_NAME;
     document.getElementById("schoolNoticeSection").classList.toggle("page-hidden", !hasSeohyeonOfficialFeed);
+    document.getElementById("familyLetterSection").classList.toggle("page-hidden", !hasSeohyeonOfficialFeed);
     document.getElementById("schoolDataSection").classList.toggle("page-hidden", !hasSeohyeonOfficialFeed);
     document.getElementById("schoolOfficialScopeNote").classList.toggle("page-hidden", hasSeohyeonOfficialFeed);
     document.getElementById("profileStudentId").textContent = profile.studentId ? `학번 ${profile.studentId}` : "학번 미설정";
@@ -303,6 +308,7 @@ const STORAGE_KEYS = { posts: "sifs.beta.posts.v1", timetable: "sifs.beta.timeta
     subjectSelect.innerHTML = `<option value="">과목 선택 안 함</option>${subjects.map(subject=>`<option value="${escapeHtml(subject)}">${escapeHtml(subject)}</option>`).join("")}`;
     if (subjects.includes(priorValue)) subjectSelect.value = priorValue;
     updateAudienceControls();
+    if (hasSeohyeonOfficialFeed && Date.now() - lastFamilyLetterAttemptAt >= SCHOOL_NOTICE_REFRESH_INTERVAL_MS) void loadSchoolFamilyLetters(true);
   }
   function showView(name) {
     ["search","timetable","register","detail","moderation"].forEach(view => document.getElementById(`${view}View`).classList.toggle("page-hidden", view !== name));
@@ -801,6 +807,7 @@ const STORAGE_KEYS = { posts: "sifs.beta.posts.v1", timetable: "sifs.beta.timeta
     schoolNoticeRefreshTimer = window.setInterval(() => {
       if (document.visibilityState === "visible") {
         void loadSchoolNotices(true);
+        void loadSchoolFamilyLetters(true);
         void loadSchoolInformation(true);
       }
     }, SCHOOL_NOTICE_REFRESH_INTERVAL_MS);
@@ -811,6 +818,7 @@ const STORAGE_KEYS = { posts: "sifs.beta.posts.v1", timetable: "sifs.beta.timeta
         if (!document.getElementById("detailView").classList.contains("page-hidden") && activePostId) showDetail(activePostId);
       });
       if (Date.now() - lastSchoolNoticeAttemptAt >= SCHOOL_NOTICE_REFRESH_INTERVAL_MS) void loadSchoolNotices(true);
+      if (Date.now() - lastFamilyLetterAttemptAt >= SCHOOL_NOTICE_REFRESH_INTERVAL_MS) void loadSchoolFamilyLetters(true);
       if (Date.now() - lastSchoolInformationAttemptAt >= SCHOOL_NOTICE_REFRESH_INTERVAL_MS) void loadSchoolInformation(true);
     });
   }
@@ -991,6 +999,86 @@ const STORAGE_KEYS = { posts: "sifs.beta.posts.v1", timetable: "sifs.beta.timeta
       if (button) { button.disabled = false; button.textContent = "공지 새로고침"; }
     }
   }
+  function setFamilyLetterStatus(message, error = false) {
+    const status = document.getElementById("familyLetterStatus");
+    if (!status) return;
+    status.textContent = message;
+    status.classList.toggle("error", error);
+  }
+  async function loadSchoolFamilyLetters(quiet = false) {
+    if (profile.schoolName !== DEFAULT_SCHOOL_NAME) return false;
+    const button = document.getElementById("refreshFamilyLetters");
+    const localPreview = ["localhost", "127.0.0.1"].includes(window.location.hostname) && ["8765", "8766"].includes(window.location.port);
+    if (!supabaseClient && !localPreview) {
+      setFamilyLetterStatus("가정통신문 연동을 위해 Supabase SDK가 필요합니다.", true);
+      return false;
+    }
+    if (familyLetterLoading) return false;
+    familyLetterLoading = true;
+    lastFamilyLetterAttemptAt = Date.now();
+    if (button) { button.disabled = true; button.textContent = "불러오는 중…"; }
+    setFamilyLetterStatus("서현고 공식 홈페이지에서 가정통신문을 불러오는 중입니다.");
+    try {
+      let data;
+      if (localPreview && !supabaseClient) {
+        const response = await fetch("/api/school-family-letters", {cache:"no-store"});
+        data = await response.json();
+        if (!response.ok) throw new Error(data?.error || "Local family letter proxy failed");
+      } else {
+        const result = await supabaseClient.functions.invoke("school-family-letters", {body:{}});
+        if (result.error) throw result.error;
+        data = result.data;
+      }
+      if (!data || !Array.isArray(data.notices)) throw new Error("Invalid family letter response");
+      familyLetterSourceName = typeof data.school === "string" && data.school.trim() ? data.school.trim().slice(0,60) : DEFAULT_SCHOOL_NAME;
+      const boardUrl = "https://seohyun-h.goesn.kr/seohyun-h/na/ntt/selectNttList.do?bbsId=15548&mi=19944";
+      const fetched = new Date(data.fetchedAt || Date.now());
+      familyLetterPosts = data.notices.slice(0,20).map((notice, index) => {
+        const title = typeof notice?.title === "string" ? notice.title.trim().slice(0,180) : "";
+        const createdAt = new Date(notice?.createdAt || fetched);
+        if (!title || Number.isNaN(createdAt.getTime())) return null;
+        let sourceUrl = boardUrl;
+        try {
+          const candidate = new URL(notice.url || boardUrl);
+          if (candidate.protocol === "https:" && candidate.hostname === "seohyun-h.goesn.kr") sourceUrl = candidate.href;
+        } catch (invalidUrl) {}
+        const stableId = String(notice.id || `${createdAt.toISOString()}-${title}`).slice(0,160);
+        return {
+          id: `official-family-${stableId}`,
+          category: "family",
+          categoryLabel: "가정통신문",
+          title,
+          body: `${familyLetterSourceName} 공식 가정통신문입니다. 본문과 첨부 파일은 원문에서 확인해 주세요.`,
+          author: typeof notice.author === "string" ? notice.author.slice(0,80) : "학교",
+          createdAt: createdAt.toISOString(),
+          subject: "",
+          audience: "학교 전체",
+          audience_type: "school",
+          target_school: DEFAULT_SCHOOL_NAME,
+          officialSource: true,
+          sourceName: `${familyLetterSourceName} 공식 홈페이지`,
+          sourceUrl,
+          origin: "실시간 연동",
+          image: "",
+          attachments: [],
+          persisted: false,
+          sourceOrder: index
+        };
+      }).filter(Boolean);
+      const fetchedLabel = Number.isNaN(fetched.getTime()) ? "방금" : formatDate(fetched, {time:true});
+      setFamilyLetterStatus(`${familyLetterSourceName} · 최신 가정통신문 ${familyLetterPosts.length}건 · ${fetchedLabel} 확인`);
+      renderPostList();
+      if (!quiet) showToast(`공식 가정통신문 ${familyLetterPosts.length}건을 새로 불러왔어요.`);
+      return true;
+    } catch (error) {
+      setFamilyLetterStatus(localPreview && !supabaseClient ? "공식 홈페이지에서 가정통신문을 가져오지 못했습니다. 잠시 후 다시 시도해 주세요." : "실시간 연동을 사용할 수 없습니다. Supabase 함수 배포 상태를 확인해 주세요.", true);
+      if (!quiet) showToast("가정통신문을 불러오지 못했습니다. 연결 상태를 확인해 주세요.");
+      return false;
+    } finally {
+      familyLetterLoading = false;
+      if (button) { button.disabled = false; button.textContent = "통신문 새로고침"; }
+    }
+  }
   async function loadCloudPosts() {
     if (!supabaseClient) return false;
     const {data, error} = await supabaseClient.from("posts")
@@ -1151,6 +1239,7 @@ const STORAGE_KEYS = { posts: "sifs.beta.posts.v1", timetable: "sifs.beta.timeta
     document.querySelectorAll("[data-go]").forEach(button=>button.addEventListener("click",()=>showView(button.dataset.go)));
     document.getElementById("searchForm").addEventListener("submit",event=>{event.preventDefault();renderPostList();});
     document.getElementById("refreshSchoolNotices").addEventListener("click",()=>loadSchoolNotices());
+    document.getElementById("refreshFamilyLetters").addEventListener("click",()=>loadSchoolFamilyLetters());
     document.getElementById("refreshSchoolInformation").addEventListener("click",()=>loadSchoolInformation());
     document.getElementById("searchInput").addEventListener("input",renderPostList);
     document.querySelectorAll("#filterRow [data-query]").forEach(button=>button.addEventListener("click",()=>{document.getElementById("searchInput").value=button.dataset.query;renderPostList();}));
@@ -1177,6 +1266,7 @@ const STORAGE_KEYS = { posts: "sifs.beta.posts.v1", timetable: "sifs.beta.timeta
     renderPostList();renderTimetable();renderUpcoming();
     startSchoolNoticeRefresh();
     void loadSchoolInformation(true);
+    void loadSchoolFamilyLetters(true);
     if (!supabaseClient) { setSchoolNoticeStatus("Supabase SDK를 불러오지 못했습니다. 로컬 공지 연결을 시도합니다.", true); void loadSchoolNotices(true); showToast("Supabase SDK를 불러오지 못했습니다."); return; }
     void loadSchoolNotices(true);
     supabaseClient.auth.onAuthStateChange((event, session) => {
