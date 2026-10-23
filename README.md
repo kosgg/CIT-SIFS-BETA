@@ -11,21 +11,20 @@
 - Supabase 로그인 URL과 Google OAuth 웹 클라이언트 주소를 설정했습니다.
 - Netlify 사이트에서 로그인한 뒤 서현고 공지·학사일정·급식 정보가 표시되는 것을 확인했습니다.
 - 앱에 포함되어 있던 기본 데모 게시글은 현재 코드에서 제거했습니다. 사용자가 직접 만든 테스트 게시글은 별도로 남아 있을 수 있습니다.
-- 앱 코드와 이 진행 상황 문서는 GitHub `main` 브랜치에서 관리합니다. 이번 시간표 변경 사항은 아직 로컬 소스에만 반영되어 공개 배포가 필요합니다.
+- 앱 코드와 이 진행 상황 문서는 GitHub `main` 브랜치에서 관리합니다. 최신 앱 코드 커밋 `3f898e3`은 GitHub에 올라갔고, 해당 커밋의 Netlify 배포도 완료된 것을 확인했습니다.
 - 학급·과목 게시글 이미지 첨부는 코드와 공개 범위 정책을 적용했으며, Netlify 배포 기록에서 배포를 확인했습니다.
-- 서현고 공식 가정통신문을 `가정통신문` 분류와 통합 검색 피드에 표시하는 코드와 `school-family-letters` Edge Function을 추가했습니다. 이 함수와 웹 코드가 각각 배포된 뒤 공개 사이트에 반영됩니다.
-- 시간표에서 코드 없는 흰칸은 같은 학교·학년·반과 공유하고, 파란 선택코드 칸은 계정별로 분리하도록 구현했습니다. SQL은 적용했지만 웹 코드는 아직 GitHub에 올리지 않아 실제 공개 사이트 반영과 두 계정 간 확인이 남아 있습니다.
+- 서현고 공식 가정통신문을 `가정통신문` 분류와 통합 검색 피드에 표시하는 코드와 `school-family-letters` Edge Function을 배포했습니다. 공개 사이트에서 가정통신문 10건이 표시되는 것을 확인했습니다.
+- 시간표에서 코드 없는 흰칸은 같은 학교·학년·반과 공유하고, 파란 선택코드 칸은 개인 계정별로 분리하도록 구현했습니다. SQL과 웹 코드는 적용·배포된 상태이며, 두 계정 사이의 공유·분리 동작 최종 확인은 아래 목록에 남아 있습니다.
 
 ### 다음에 할 일
 
-1. **Netlify 최신 배포 확인:** Netlify의 **Deploys**에서 GitHub `main`의 최신 커밋이 성공적으로 배포됐는지 확인하고, 사이트를 시크릿 창에서 새로고침합니다. 기본 데모 글이 없어졌는지 확인하고, 직접 등록한 `test` 등의 글은 앱에서 따로 삭제합니다.
-2. **공개 범위 확인:** 서로 다른 두 계정으로 같은 학교·같은 학급, 다른 학급, 다른 학교 게시글이 각 대상에게만 보이는지 확인합니다.
-3. **시간표 공개 범위 확인:** 같은 반의 두 계정에서 흰칸 변경이 동기화되고, F~J 선택과목은 서로의 계정에 나타나지 않는지 확인합니다. 같은 계정 안에서 같은 코드 과목명은 함께 바뀌는지도 점검합니다.
-4. **신고 흐름 확인:** 테스트 게시글을 신고하고 `hongsg821@gmail.com` 운영자 계정의 **신고 관리**에서 확인·처리·숨김이 되는지 점검한 뒤 테스트 자료를 정리합니다.
-5. **공개 전 개인정보 점검:** 예전 베타의 공개 URL 이미지가 남아 있는지 아래 SQL로 찾고, 백업 JSON에 학번이 포함될 수 있다는 안내가 사용자에게 보이는지 확인합니다.
-6. **공개 범위 확대 전 준비:** 현재 학교·학년·반은 직접 입력한 값이라 재학이나 반 배정을 증명하지 않습니다. 더 넓게 공개하거나 학급 소속을 신뢰해야 한다면 초대 코드 같은 확인 절차를 추가합니다. 일반 사용자에게 Google 로그인을 열기 전에는 OAuth 앱 게시 및 필요한 검증을 마칩니다. 테스트 중이라면 Google OAuth를 Testing 상태로 유지해도 됩니다.
+1. **게시글 공개 범위 확인:** 서로 다른 두 계정으로 같은 학교·같은 학급, 다른 학급, 다른 학교 게시글이 각 대상에게만 보이는지 확인합니다. GitHub `main`의 앱 커밋 `3f898e3`은 Netlify에 배포된 것을 확인했습니다. 기본 데모 글은 코드에서 제거했으며, 직접 등록한 `test` 등의 글은 남아 있다면 앱에서 따로 삭제합니다.
+2. **시간표 공개 범위 확인:** 같은 반의 두 계정에서 흰칸 변경이 동기화되고, F~J 선택과목은 서로의 계정에 나타나지 않는지 확인합니다. 같은 계정 안에서 같은 코드 과목명은 함께 바뀌는지도 점검합니다.
+3. **신고 흐름 확인:** 테스트 게시글을 신고하고 `hongsg821@gmail.com` 운영자 계정의 **신고 관리**에서 확인·처리·숨김이 되는지 점검한 뒤 테스트 자료를 정리합니다.
+4. **공개 전 개인정보 점검:** 예전 베타의 공개 URL 이미지가 남아 있는지 아래 SQL로 찾고, 백업 JSON에 학번이 포함될 수 있다는 안내가 사용자에게 보이는지 확인합니다.
+5. **공개 범위 확대 전 준비:** 현재 학교·학년·반은 직접 입력한 값이라 재학이나 반 배정을 증명하지 않습니다. 더 넓게 공개하거나 학급 소속을 신뢰해야 한다면 초대 코드 같은 확인 절차를 추가합니다. 일반 사용자에게 Google 로그인을 열기 전에는 OAuth 앱 게시 및 필요한 검증을 마칩니다. 테스트 중이라면 Google OAuth를 Testing 상태로 유지해도 됩니다.
 
-로컬 미리보기는 `http://127.0.0.1:8765/`에서 열립니다. 공개 주소는 [https://cit-sifs.netlify.app](https://cit-sifs.netlify.app)입니다. 로컬 파일이 GitHub에 올라갔다고 Netlify 배포까지 완료된 것은 아니므로, 위 1번에서 최신 배포를 확인하세요.
+로컬 미리보기는 `http://127.0.0.1:8765/`에서 열립니다. 공개 주소는 [https://cit-sifs.netlify.app](https://cit-sifs.netlify.app)입니다. GitHub에 새 앱 코드가 올라오면 Netlify의 **Deploys**에서 최신 커밋의 배포 상태를 확인하세요.
 
 ## 아직 다듬지 않은 점과 제한
 
@@ -59,7 +58,7 @@ node dev-server.mjs
 
 ## 공지·학사일정·급식 함수 배포
 
-`supabase/functions/school-notices/index.ts`는 서현고 공식 공지사항을, `supabase/functions/school-family-letters/index.ts`는 가정통신문을, `supabase/functions/school-information/index.ts`는 서현고 학사일정과 급식표를 가져옵니다. 앱은 30분마다 갱신하며, 각 함수가 배포되지 않으면 공개 사이트에서 해당 정보가 갱신되지 않습니다.
+`supabase/functions/school-notices/index.ts`는 서현고 공식 공지사항을, `supabase/functions/school-family-letters/index.ts`는 가정통신문을, `supabase/functions/school-information/index.ts`는 서현고 학사일정과 급식표를 가져옵니다. 세 함수는 Supabase에 배포되어 있습니다. 앱은 30분마다 갱신하며, 함수가 배포되지 않으면 공개 사이트에서 해당 정보가 갱신되지 않습니다.
 
 Supabase CLI가 설치된 환경에서 프로젝트 폴더를 열고 실행합니다.
 
@@ -70,7 +69,7 @@ supabase functions deploy school-family-letters --project-ref wljqmhwshmbcaitfiu
 supabase functions deploy school-information --project-ref wljqmhwshmbcaitfiudc
 ~~~
 
-두 함수는 학교가 공개한 정보만 반환합니다. 공식 데이터는 사용자 게시글 테이블에 복사하지 않습니다. 배포 절차는 [Supabase Edge Functions 안내](https://supabase.com/docs/guides/functions/deploy)를 참고하세요.
+세 함수는 학교가 공개한 정보만 반환합니다. 공식 데이터는 사용자 게시글 테이블에 복사하지 않습니다. 배포 절차는 [Supabase Edge Functions 안내](https://supabase.com/docs/guides/functions/deploy)를 참고하세요.
 
 ## 공개 범위와 신고
 
@@ -101,9 +100,9 @@ where audience_type <> 'school'
 
 - [x] 학급 시간표 슬롯/RLS SQL 적용 (2026-10-23)
 - [x] `school-notices`, `school-information` Edge Function 배포 (완료 확인)
-- [ ] `school-family-letters` Edge Function 배포
+- [x] `school-family-letters` Edge Function 배포 및 공개 사이트 표시 확인
 - [x] Netlify에서 로그인 후 공지·학사일정·급식 표시 확인
-- [ ] GitHub `main`의 최신 커밋이 Netlify에 성공적으로 배포되고 기본 데모 글이 사라졌는지 확인
+- [x] GitHub `main`의 앱 커밋 `3f898e3`이 Netlify에 성공적으로 배포된 것을 확인
 - [ ] Google 로그인 버튼으로 테스트 계정 로그인·로그아웃 확인 (사용한 로그인 제공자가 Google인지 별도 확인 필요)
 - [ ] 서로 다른 계정·학교·학급으로 게시글 공개 범위를 확인함
 - [ ] 같은 반 계정 사이에서 흰칸 시간표 공유 확인
