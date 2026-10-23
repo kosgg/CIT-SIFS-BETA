@@ -56,8 +56,16 @@ const STORAGE_KEYS = { posts: "sifs.beta.posts.v1", timetable: "sifs.beta.timeta
     if (!targetProfile.schoolName || !targetProfile.grade || !targetProfile.className) return null;
     return {school_name:targetProfile.schoolName.trim(), grade:targetProfile.grade.trim(), class_name:targetProfile.className.trim()};
   }
+  function studentTimetableIdentity(targetProfile = profile) {
+    const studentId=typeof targetProfile.studentId==="string"?targetProfile.studentId.trim():"";
+    if (!targetProfile.schoolName || !targetProfile.grade || !studentId) return null;
+    return {school_name:targetProfile.schoolName.trim(), grade:targetProfile.grade.trim(), student_id:studentId};
+  }
   function classTimetableStorageKey(identity = classTimetableIdentity()) {
     return identity ? `${STORAGE_KEYS.timetable}.class.${encodeURIComponent(`${identity.school_name}|${identity.grade}|${identity.class_name}`)}` : "";
+  }
+  function studentTimetableStorageKey(identity = studentTimetableIdentity()) {
+    return identity ? `${STORAGE_KEYS.timetable}.student.${encodeURIComponent(`${identity.school_name}|${identity.grade}|${identity.student_id}`)}` : "";
   }
   function classTimetableKnownCloudKey(identity = classTimetableIdentity()) {
     const key=classTimetableStorageKey(identity);
@@ -67,6 +75,7 @@ const STORAGE_KEYS = { posts: "sifs.beta.posts.v1", timetable: "sifs.beta.timeta
     const slots = new Map();
     normalizeClassTimetable(classTimetable).forEach(item => slots.set(`${item.day}-${item.period}`, item));
     normalizeTimetable(timetable).forEach(item => slots.set(`${item.day}-${item.period}`, item));
+    normalizeTimetable(studentTimetable).forEach(item => slots.set(`${item.day}-${item.period}`, item));
     return [...slots.values()].sort((a,b) => a.day-b.day || a.period-b.period);
   }
   function profileForUser(user) {
@@ -149,6 +158,8 @@ const STORAGE_KEYS = { posts: "sifs.beta.posts.v1", timetable: "sifs.beta.timeta
   let profile = normalizeProfile(loadValue(profileStorageKey(), {name:"학생", studentId:"", schoolName:DEFAULT_SCHOOL_NAME, grade:"", className:""}));
   let classTimetable = [];
   let classTimetableReady = false;
+  let studentTimetable = normalizeTimetable(loadValue(studentTimetableStorageKey(),[])).filter(item=>item.code);
+  let studentTimetableReady = false;
   let selectedCategory = "전체";
   let activePostId = "";
   let selectedSlot = null;
@@ -157,6 +168,7 @@ const STORAGE_KEYS = { posts: "sifs.beta.posts.v1", timetable: "sifs.beta.timeta
   let currentUser = null;
   let realtimeChannel = null;
   let classTimetableChannel = null;
+  let studentTimetableChannel = null;
   let isModerator = false;
 
   function loadValue(key, fallback) {
@@ -274,6 +286,10 @@ const STORAGE_KEYS = { posts: "sifs.beta.posts.v1", timetable: "sifs.beta.timeta
   }
   function renderTimetable() {
     const grid = document.getElementById("weekGrid");
+    const personalSlots=new Map();
+    normalizeTimetable(timetable).forEach(item=>personalSlots.set(`${item.day}-${item.period}`,item));
+    normalizeTimetable(studentTimetable).forEach(item=>personalSlots.set(`${item.day}-${item.period}`,item));
+    const personalTimetable=[...personalSlots.values()];
     const today = new Date();
     const monday = new Date(today);
     monday.setDate(today.getDate() - ((today.getDay() + 6) % 7));
@@ -287,21 +303,21 @@ const STORAGE_KEYS = { posts: "sifs.beta.posts.v1", timetable: "sifs.beta.timeta
     for (let period=1; period<=7; period++) {
       html += `<div class="week-cell time">${period}교시</div>`;
       for (let day=1; day<=5; day++) {
-        const personalItem = timetable.find(entry => entry.day === day && entry.period === period);
+        const personalItem = personalTimetable.find(entry => entry.day === day && entry.period === period);
         const sharedItem = classTimetable.find(entry => entry.day === day && entry.period === period);
         const item = personalItem || sharedItem;
         const content = item
           ? `${item.code ? `<span class="slot-code">${escapeHtml(item.code)}</span>` : ""}<span>${item.subject ? escapeHtml(item.subject) : "과목 입력"}</span>`
           : "＋";
         const itemClass = personalItem?.code ? "personal-slot" : (personalItem||sharedItem) ? "shared-slot" : "";
-        const itemTitle=personalItem?.code?"내 계정에만 저장되는 선택과목":(personalItem||sharedItem)?"같은 학급과 공유되는 공통 수업":"빈 시간 칸";
+        const itemTitle=personalItem?.code?(studentTimetableReady?"같은 학교·학년·학번 계정과 동기화되는 선택과목":"이 계정에 저장되는 선택과목"):(personalItem||sharedItem)?"같은 학급과 공유되는 공통 수업":"빈 시간 칸";
         html += `<div class="week-cell course ${item?"has-course":""} ${itemClass}" data-slot="${day}-${period}" title="${itemTitle} · 눌러서 편집">${content}</div>`;
       }
     }
     grid.innerHTML = html;
     grid.querySelectorAll("[data-slot]").forEach(cell => cell.addEventListener("click", () => {
       const [day,period] = cell.dataset.slot.split("-").map(Number);
-      selectedSlot={day,period};const current=timetable.find(item=>item.day===day&&item.period===period)||classTimetable.find(item=>item.day===day&&item.period===period);
+      selectedSlot={day,period};const current=personalTimetable.find(item=>item.day===day&&item.period===period)||classTimetable.find(item=>item.day===day&&item.period===period);
       document.getElementById("dayInput").value = String(day); document.getElementById("periodInput").value = String(period); document.getElementById("courseInput").value=current?.subject||""; document.getElementById("courseCodeInput").value=current?.code||"";
       document.getElementById("addCourseButton").textContent=current?"과목 수정":"과목 추가";
       document.getElementById("deleteCourseButton").classList.toggle("page-hidden",!current);
@@ -309,7 +325,7 @@ const STORAGE_KEYS = { posts: "sifs.beta.posts.v1", timetable: "sifs.beta.timeta
     }));
     document.getElementById("courseCodeInput").onchange = () => {
       const code = document.getElementById("courseCodeInput").value;
-      const mapped = timetable.find(item => item.code === code && item.subject);
+      const mapped = personalTimetable.find(item => item.code === code && item.subject);
       const input = document.getElementById("courseInput");
       if (mapped && !input.value.trim()) input.value = mapped.subject;
     };
@@ -332,15 +348,17 @@ const STORAGE_KEYS = { posts: "sifs.beta.posts.v1", timetable: "sifs.beta.timeta
     document.getElementById("homeName").textContent = profile.name;
     document.getElementById("personalGreeting").textContent = `${profile.name}님의 한 주를 한눈에.`;
     document.getElementById("timetableAccountStatus").textContent = currentUser
-      ? classTimetableReady ? "● 흰칸은 같은 반과 공유 · 파란 선택과목은 이 계정에만 저장됩니다." : "● 파란 선택과목은 이 계정에 저장됩니다. 흰칸 공유는 학급 설정과 Supabase SQL 적용이 필요해요."
-      : "로그인 후 흰칸은 같은 반과 공유하고, 선택과목은 내 계정에 저장할 수 있어요.";
+      ? `${classTimetableReady ? "● 흰칸은 같은 반과 공유" : "● 흰칸 공유 설정 확인 필요"} · ${studentTimetableReady ? "파란 선택과목은 같은 학교·학년·학번 계정과 동기화" : studentTimetableIdentity() ? "파란 선택과목 동기화 설정 확인 필요" : "학번을 입력하면 선택과목도 같은 학번 계정과 동기화"}`
+      : "로그인하면 흰칸은 같은 반과, 선택과목은 같은 학교·학년·학번 계정과 동기화돼요.";
     document.getElementById("scheduleNote").textContent = !currentUser
-      ? "흰칸은 같은 반과 공유되고, 선택코드는 내 시간표에서 같은 과목끼리 연결됩니다. 로그인 후 시간표를 저장할 수 있어요."
-      : !classTimetableIdentity() ? "학교·학년·반을 설정하면 흰칸이 해당 반 계정과 공유됩니다. 선택과목은 개인별로 저장됩니다."
-      : !classTimetableReady ? "반별 흰칸 동기화를 사용할 수 없습니다. 최신 supabase-setup.sql 적용 여부를 확인해 주세요. 선택과목은 개인별로 저장됩니다."
-      : timetable.some(item => item.code)
-        ? "흰칸은 같은 반과 공유됩니다. 파란 선택코드는 이 계정 안에서만 같은 과목을 연결하며, 한 칸에 과목명을 입력하면 내 같은 코드 칸에 적용됩니다."
-        : "흰칸은 같은 반과 공유됩니다. 선택과목은 개인 시간표에서 같은 알파벳 코드를 지정하면 한 번 입력한 과목명이 내 같은 코드 칸에 적용됩니다.";
+      ? "흰칸은 같은 반과 공유되고, 파란 선택과목은 같은 학교·학년·학번 계정과 동기화돼요. 학번은 직접 입력한 값이며 본인 인증은 아닙니다."
+      : !classTimetableIdentity() ? "학교·학년·반을 설정하면 흰칸이 해당 반과 공유됩니다. 학번을 입력하면 파란 선택과목도 같은 학번 계정과 동기화됩니다."
+      : !classTimetableReady ? "흰칸 공유 설정을 확인해 주세요. 최신 Supabase 시간표 SQL을 적용해야 동기화됩니다."
+      : studentTimetableIdentity() && !studentTimetableReady ? "선택과목 동기화 설정을 확인해 주세요. 학교·학년·학번이 같은 계정과 공유됩니다."
+      : personalTimetable.some(item => item.code)
+        ? studentTimetableReady ? "흰칸은 같은 반과 공유되고, 파란 선택코드는 같은 학교·학년·학번 계정과 동기화됩니다. 같은 코드 과목명은 한 번 입력하면 모두 적용됩니다."
+          : "흰칸은 같은 반과 공유됩니다. 학번을 입력하면 파란 선택과목도 같은 학번 계정과 동기화됩니다."
+        : "흰칸은 같은 반과 공유됩니다. 선택과목은 학번을 입력한 계정끼리 동기화됩니다.";
     const visible = visibleTimetable();
     const todayCourses = visible.filter(item => item.day === weekday && item.subject).sort((a,b)=>a.period-b.period).map(item=>`${item.period}교시 ${item.subject}`).join(" · ");
     document.getElementById("todayCourseSummary").textContent = weekday === 0 || weekday === 6
@@ -416,10 +434,28 @@ const STORAGE_KEYS = { posts: "sifs.beta.posts.v1", timetable: "sifs.beta.timeta
     const code=document.getElementById("courseCodeInput").value;
     const day=Number(document.getElementById("dayInput").value);
     const period=Number(document.getElementById("periodInput").value);
-    if(code&&!subject)subject=timetable.find(item=>item.code===code&&item.subject)?.subject||"";
+    if(code&&!subject)subject=[...studentTimetable,...timetable].find(item=>item.code===code&&item.subject)?.subject||"";
     if(!subject&&!code){showToast("과목 이름을 입력하거나 선택과목 코드를 지정해 주세요.");input.focus();return;}
     const isEditingSelectedSlot = selectedSlot?.day === day && selectedSlot?.period === period;
     if (code) {
+      const studentIdentity=studentTimetableIdentity();
+      if(studentIdentity){
+        if(!studentTimetableReady){showToast("선택과목 동기화를 사용할 수 없어요. 안내된 Supabase 시간표 SQL을 먼저 적용해 주세요.");return;}
+        const existing=studentTimetable.find(item=>item.day===day&&item.period===period);
+        if(existing&&!isEditingSelectedSlot){showToast(`${DAYS[day]}요일 ${period}교시에 선택과목이 이미 있어요.`);return;}
+        let next=studentTimetable.filter(item=>item.day!==day||item.period!==period);
+        next.push({day,period,subject,code});
+        const matchingCodeSlots=next.filter(item=>item.code===code).length;
+        next=next.map(item=>item.code===code?{...item,subject}:item);
+        try {
+          await persistStudentTimetable(next);
+          clearCourseEditor();
+          renderTimetable();renderUpcoming();
+          await loadCloudPosts();
+          showToast(matchingCodeSlots>1?`${code} 코드는 같은 학번 시간표의 ${matchingCodeSlots}개 칸에 적용했어요.`:"선택과목을 같은 학번 계정과 동기화했어요.");
+        } catch(error) { showToast(describeStudentTimetableError(error)); }
+        return;
+      }
       const existing=timetable.find(item=>item.day===day&&item.period===period);
       if(existing&&!isEditingSelectedSlot){showToast(`${DAYS[day]}요일 ${period}교시에 내 선택과목이 이미 있어요.`);return;}
       const updatedItem={day,period,subject,code};
@@ -435,11 +471,13 @@ const STORAGE_KEYS = { posts: "sifs.beta.posts.v1", timetable: "sifs.beta.timeta
     if (!classTimetableIdentity()) { showToast("흰칸을 반과 공유하려면 학교·학년·반을 먼저 설정해 주세요."); openProfileEditor(); return; }
     if (!classTimetableReady) { showToast("반별 시간표 공유 설정이 필요해요. 최신 supabase-setup.sql을 Supabase SQL Editor에서 실행해 주세요."); return; }
     const personalExisting=timetable.find(item=>item.day===day&&item.period===period);
+    const studentExisting=studentTimetable.find(item=>item.day===day&&item.period===period);
     const sharedExisting=classTimetable.find(item=>item.day===day&&item.period===period);
-    if((personalExisting||sharedExisting)&&!isEditingSelectedSlot){const existing=personalExisting||sharedExisting;showToast(`${DAYS[day]}요일 ${period}교시에 ${existing.subject||`코드 ${existing.code}`}이(가) 이미 있어요.`);return;}
+    if((personalExisting||studentExisting||sharedExisting)&&!isEditingSelectedSlot){const existing=personalExisting||studentExisting||sharedExisting;showToast(`${DAYS[day]}요일 ${period}교시에 ${existing.subject||`코드 ${existing.code}`}이(가) 이미 있어요.`);return;}
     const nextClassTimetable=normalizeClassTimetable(classTimetable.filter(item=>item.day!==day||item.period!==period).concat({day,period,subject}));
     try {
       await persistClassTimetable(nextClassTimetable);
+      if(studentExisting)await persistStudentTimetable(studentTimetable.filter(item=>item.day!==day||item.period!==period));
       if(personalExisting){
         timetable=timetable.filter(item=>item.day!==day||item.period!==period);
         if(!saveValue(timetableStorageKey(currentUser.id),timetable))return;
@@ -467,10 +505,28 @@ const STORAGE_KEYS = { posts: "sifs.beta.posts.v1", timetable: "sifs.beta.timeta
     if (code==="42501"||/row-level security|permission denied|policy/.test(message)) return "학급 시간표 공유 권한이 없어요. 최신 supabase-setup.sql을 다시 적용하고 학교·학년·반 설정을 확인해 주세요.";
     return "반별 시간표를 저장하지 못했어요. 인터넷 연결과 Supabase 설정을 확인해 주세요.";
   }
+  function describeStudentTimetableError(error) {
+    const code=String(error?.code||"");
+    const message=String(error?.message||"").toLowerCase();
+    if (["42P01","PGRST205","PGRST204"].includes(code)||/student_timetable_slots|schema cache|does not exist/.test(message)) return "학번별 선택과목 테이블이 아직 없어요. supabase/migrations/20261023_student_timetable_slots.sql을 Supabase SQL Editor에서 실행해 주세요.";
+    if (code==="42501"||/row-level security|permission denied|policy/.test(message)) return "학번별 선택과목 공유 권한을 확인해 주세요. 학교·학년·학번이 같은지 확인하고 최신 시간표 SQL을 적용해 주세요.";
+    return "선택과목을 같은 학번 계정과 동기화하지 못했어요. 인터넷 연결과 Supabase 설정을 확인해 주세요.";
+  }
   async function deleteSelectedCourse() {
     if (!currentUser) { showToast("시간표를 계정에 저장하려면 로그인해 주세요."); openAuthDialog(); return; }
     if(!selectedSlot)return;
     const {day,period}=selectedSlot;
+    const studentExisting=studentTimetable.find(item=>item.day===day&&item.period===period);
+    if(studentExisting){
+      if(!studentTimetableReady){showToast("학번별 선택과목 공유 설정을 확인한 뒤 다시 시도해 주세요.");return;}
+      try {
+        await persistStudentTimetable(studentTimetable.filter(item=>item.day!==day||item.period!==period));
+        clearCourseEditor();renderTimetable();renderUpcoming();
+        await loadCloudPosts();
+        showToast("같은 학번 계정의 선택과목을 삭제했어요.");
+      } catch(error) { showToast(describeStudentTimetableError(error)); }
+      return;
+    }
     const personalExisting=timetable.find(item=>item.day===day&&item.period===period);
     if(personalExisting){
       timetable=timetable.filter(item=>item.day!==day||item.period!==period);
@@ -489,7 +545,7 @@ const STORAGE_KEYS = { posts: "sifs.beta.posts.v1", timetable: "sifs.beta.timeta
   }
   function openProfileEditor() {
     if (!currentUser) { showToast("로그인한 뒤 학교·학급을 계정에 저장할 수 있어요."); openAuthDialog(); return; }
-    document.getElementById("modalRoot").innerHTML=`<div class="modal-backdrop" id="modalBackdrop"><section class="modal"><h2>학교·학급 설정</h2><p>입력한 정보와 시간표는 이 계정에 저장되어 다른 기기에서도 사용할 수 있어요.</p><div class="field" style="margin:12px 0"><label for="editName">이름 *</label><input id="editName" value="${escapeHtml(profile.name)}" maxlength="20" autocomplete="name" required></div><div class="field" style="margin:0 0 12px"><label for="editSchool">학교명 *</label><input id="editSchool" value="${escapeHtml(profile.schoolName)}" maxlength="60" autocomplete="organization" placeholder="예: 서현고등학교" required></div><div class="form-grid" style="grid-template-columns:1fr 1fr;margin:0 0 12px"><div class="field"><label for="editGrade">학년 *</label><select id="editGrade"><option value="">선택</option>${[1,2,3].map(grade=>`<option value="${grade}학년" ${profile.grade===`${grade}학년`?"selected":""}>${grade}학년</option>`).join("")}</select></div><div class="field"><label for="editClass">반 *</label><input id="editClass" type="number" min="1" max="99" value="${escapeHtml(profile.className.replace(/반$/, ""))}" inputmode="numeric" placeholder="예: 3" required></div></div><div class="field" style="margin:0 0 10px"><label for="editStudentId">학번 <em>선택</em></label><input id="editStudentId" value="${escapeHtml(profile.studentId)}" maxlength="20" inputmode="numeric" autocomplete="off" placeholder="예: 2307"></div><p class="profile-privacy-note">같은 학교 친구와 공개 게시글을 주고받으려면 학교명을 똑같이 입력하세요. 학교·학급은 직접 입력한 정보로 재학 인증은 아닙니다. 학번은 본인 계정에만 저장되고 게시글에는 표시되지 않아요. 공식 공지·학사일정 연동은 현재 서현고 전용입니다.</p><div class="modal-actions"><button class="outline" id="cancelProfile" type="button">취소</button><button class="primary" id="saveProfile" type="button">저장</button></div></section></div>`;
+    document.getElementById("modalRoot").innerHTML=`<div class="modal-backdrop" id="modalBackdrop"><section class="modal"><h2>학교·학급 설정</h2><p>프로필과 시간표는 Supabase에 저장되어 같은 범위의 계정과 동기화됩니다.</p><div class="field" style="margin:12px 0"><label for="editName">이름 *</label><input id="editName" value="${escapeHtml(profile.name)}" maxlength="20" autocomplete="name" required></div><div class="field" style="margin:0 0 12px"><label for="editSchool">학교명 *</label><input id="editSchool" value="${escapeHtml(profile.schoolName)}" maxlength="60" autocomplete="organization" placeholder="예: 서현고등학교" required></div><div class="form-grid" style="grid-template-columns:1fr 1fr;margin:0 0 12px"><div class="field"><label for="editGrade">학년 *</label><select id="editGrade"><option value="">선택</option>${[1,2,3].map(grade=>`<option value="${grade}학년" ${profile.grade===`${grade}학년`?"selected":""}>${grade}학년</option>`).join("")}</select></div><div class="field"><label for="editClass">반 *</label><input id="editClass" type="number" min="1" max="99" value="${escapeHtml(profile.className.replace(/반$/, ""))}" inputmode="numeric" placeholder="예: 3" required></div></div><div class="field" style="margin:0 0 10px"><label for="editStudentId">학번 <em>선택 · 선택과목 공유에 필요</em></label><input id="editStudentId" value="${escapeHtml(profile.studentId)}" maxlength="20" inputmode="numeric" autocomplete="off" placeholder="예: 2307"></div><p class="profile-privacy-note">같은 학교 친구와 공개 게시글을 주고받으려면 학교명을 똑같이 입력하세요. 학교·학급은 직접 입력한 정보라 재학 인증은 아닙니다. 학번도 직접 입력한 값이며 본인 인증이 아닙니다. 같은 학교·학년·학번을 입력한 계정끼리는 선택과목 시간표가 공유됩니다. 학번은 게시글에 표시되지 않습니다. 공식 공지·학사일정 연동은 현재 서현고 전용입니다.</p><div class="modal-actions"><button class="outline" id="cancelProfile" type="button">취소</button><button class="primary" id="saveProfile" type="button">저장</button></div></section></div>`;
     document.getElementById("cancelProfile").addEventListener("click",()=>document.getElementById("modalRoot").innerHTML="");
     document.getElementById("modalBackdrop").addEventListener("click",event=>{if(event.target.id==="modalBackdrop")document.getElementById("modalRoot").innerHTML="";});
     document.getElementById("saveProfile").addEventListener("click",async()=>{
@@ -510,6 +566,7 @@ const STORAGE_KEYS = { posts: "sifs.beta.posts.v1", timetable: "sifs.beta.timeta
         if(error)throw error;
         profile=nextProfile;
         await loadClassTimetable({migratePersonal:false});
+        await loadStudentTimetable({migrateLegacy:true});
         const localSaved=saveValue(profileStorageKey(currentUser.id),profile);
         document.getElementById("modalRoot").innerHTML="";
         renderTimetable();
@@ -637,7 +694,8 @@ const STORAGE_KEYS = { posts: "sifs.beta.posts.v1", timetable: "sifs.beta.timeta
   function exportBackup() {
     const identity=classTimetableIdentity();
     const sharedItems=identity?normalizeClassTimetable([...classTimetable,...timetable.filter(item=>!item.code)]):[];
-    const personalItems=identity?timetable.filter(item=>item.code):timetable;
+    const studentIdentity=studentTimetableIdentity();
+    const personalItems=studentIdentity?normalizeTimetable([...studentTimetable,...timetable.filter(item=>item.code)]):identity?timetable.filter(item=>item.code):timetable;
     const payload = {
       app: "SIFS",
       version: 3,
@@ -731,17 +789,22 @@ const STORAGE_KEYS = { posts: "sifs.beta.posts.v1", timetable: "sifs.beta.timeta
     const savedProfileKey = profileStorageKey(currentUser?.id || "");
     const savedTimetableKey = timetableStorageKey(currentUser?.id || "");
     const identity=classTimetableIdentity(backup.profile);
+    const studentIdentity=studentTimetableIdentity(backup.profile);
     const savedClassTimetableKey=classTimetableStorageKey(identity);
+    const savedStudentTimetableKey=studentTimetableStorageKey(studentIdentity);
+    const personalItems=studentIdentity?backup.timetable.filter(item=>!item.code):backup.timetable;
+    const selectedItems=studentIdentity?backup.timetable.filter(item=>item.code):[];
     const savedPublicPosts = backup.posts.filter(post => isSchoolPost(post) && audienceForPost(post).schoolName === backup.profile.schoolName && !RETIRED_DEMO_POST_IDS.has(post.id));
     const values = {
       [STORAGE_KEYS.posts]: savedPublicPosts,
-      [savedTimetableKey]: backup.timetable,
+      [savedTimetableKey]: personalItems,
       [savedProfileKey]: backup.profile,
-      ...(identity?{[savedClassTimetableKey]:backup.classTimetable,[classTimetableKnownCloudKey(identity)]:false}:{})
+      ...(identity?{[savedClassTimetableKey]:backup.classTimetable,[classTimetableKnownCloudKey(identity)]:false}:{}),
+      ...(studentIdentity?{[savedStudentTimetableKey]:selectedItems}: {})
     };
     const previous = Object.keys(values).map(key => [key, localStorage.getItem(key)]);
     try {
-      [savedTimetableKey, savedProfileKey, STORAGE_KEYS.posts, ...(identity?[savedClassTimetableKey,classTimetableKnownCloudKey(identity)]:[])].forEach(key => {
+      [savedTimetableKey, savedProfileKey, STORAGE_KEYS.posts, ...(identity?[savedClassTimetableKey,classTimetableKnownCloudKey(identity)]:[]), ...(studentIdentity?[savedStudentTimetableKey]:[])].forEach(key => {
         localStorage.setItem(key, JSON.stringify(values[key]));
       });
     } catch (error) {
@@ -755,10 +818,12 @@ const STORAGE_KEYS = { posts: "sifs.beta.posts.v1", timetable: "sifs.beta.timeta
       return false;
     }
     posts = savedPublicPosts;
-    timetable = backup.timetable;
+    timetable = personalItems;
     profile = backup.profile;
     classTimetable=identity?backup.classTimetable:[];
     classTimetableReady=false;
+    studentTimetable=studentIdentity?selectedItems:[];
+    studentTimetableReady=false;
     renderTimetable();
     renderUpcoming();
     renderPostList();
@@ -766,6 +831,7 @@ const STORAGE_KEYS = { posts: "sifs.beta.posts.v1", timetable: "sifs.beta.timeta
     if (currentUser) (async()=>{
       await syncUserData();
       if(identity){await persistClassTimetable(classTimetable);subscribeToClassTimetable(identity);}
+      if(studentIdentity){await loadStudentTimetable({migrateLegacy:false});await persistStudentTimetable(selectedItems);subscribeToStudentTimetable(studentIdentity);}
       await publishLocalPosts();
       await loadCloudPosts();
     })().catch(() => showToast("백업은 이 기기에 복원했지만 클라우드 동기화에 실패했습니다."));
@@ -1291,6 +1357,79 @@ const STORAGE_KEYS = { posts: "sifs.beta.posts.v1", timetable: "sifs.beta.timeta
     saveValue(classTimetableKnownCloudKey(identity),true);
     return classTimetable;
   }
+  async function persistStudentTimetable(items) {
+    const identity=studentTimetableIdentity();
+    if(!currentUser||!supabaseClient||!identity)throw new Error("학교·학년·학번 설정이 필요합니다.");
+    const normalized=normalizeTimetable(items).filter(item=>item.code);
+    const slotRows=normalized.map(item=>({...identity,...item}));
+    if(slotRows.length){
+      const result=await supabaseClient.from("student_timetable_slots").upsert(slotRows,{onConflict:"school_name,grade,student_id,day,period"});
+      if(result.error)throw result.error;
+    }
+    const nextSlots=new Set(normalized.map(item=>`${item.day}-${item.period}`));
+    const removed=studentTimetable.filter(item=>!nextSlots.has(`${item.day}-${item.period}`));
+    for(const item of removed){
+      const result=await supabaseClient.from("student_timetable_slots").delete().match({...identity,day:item.day,period:item.period});
+      if(result.error)throw result.error;
+    }
+    studentTimetable=normalized;
+    studentTimetableReady=true;
+    saveValue(studentTimetableStorageKey(identity),studentTimetable);
+    return studentTimetable;
+  }
+  function subscribeToStudentTimetable(identity) {
+    if(!supabaseClient)return;
+    if(studentTimetableChannel){supabaseClient.removeChannel(studentTimetableChannel);studentTimetableChannel=null;}
+    studentTimetableChannel=supabaseClient.channel("sifs-student-timetable")
+      .on("postgres_changes",{event:"*",schema:"public",table:"student_timetable_slots",filter:`school_name=eq.${identity.school_name}`},payload=>{
+        const row=payload.new||payload.old;
+        const currentIdentity=studentTimetableIdentity();
+        if(!row||!currentIdentity||row.school_name!==currentIdentity.school_name||row.grade!==currentIdentity.grade||row.student_id!==currentIdentity.student_id)return;
+        const slotKey=`${row.day}-${row.period}`;
+        if(payload.eventType==="DELETE")studentTimetable=studentTimetable.filter(item=>`${item.day}-${item.period}`!==slotKey);
+        else studentTimetable=normalizeTimetable([...studentTimetable.filter(item=>`${item.day}-${item.period}`!==slotKey),row]).filter(item=>item.code);
+        studentTimetableReady=true;
+        saveValue(studentTimetableStorageKey(currentIdentity),studentTimetable);
+        renderTimetable();renderUpcoming();
+      }).subscribe();
+  }
+  async function loadStudentTimetable({migrateLegacy=true}={}) {
+    const identity=studentTimetableIdentity();
+    if(!identity){
+      studentTimetable=[];studentTimetableReady=false;
+      if(studentTimetableChannel){supabaseClient.removeChannel(studentTimetableChannel);studentTimetableChannel=null;}
+      return false;
+    }
+    const localKey=studentTimetableStorageKey(identity);
+    studentTimetable=normalizeTimetable(loadValue(localKey,[])).filter(item=>item.code);
+    studentTimetableReady=false;
+    try {
+      const result=await supabaseClient.from("student_timetable_slots").select("day,period,subject,code").match(identity);
+      if(result.error)throw result.error;
+      let shared=normalizeTimetable(result.data||[]).filter(item=>item.code);
+      const legacy=migrateLegacy?normalizeTimetable(timetable).filter(item=>item.code):[];
+      if(legacy.length){
+        const occupied=new Set(shared.map(item=>`${item.day}-${item.period}`));
+        const additions=legacy.filter(item=>!occupied.has(`${item.day}-${item.period}`));
+        if(additions.length){
+          await persistStudentTimetable([...shared,...additions]);
+          shared=studentTimetable;
+        }
+        timetable=timetable.filter(item=>!item.code);
+        saveValue(timetableStorageKey(currentUser.id),timetable);
+        await syncUserData();
+      }
+      studentTimetable=shared;
+      studentTimetableReady=true;
+      saveValue(localKey,studentTimetable);
+      subscribeToStudentTimetable(identity);
+      return true;
+    } catch(error) {
+      studentTimetableReady=false;
+      if(studentTimetableChannel){supabaseClient.removeChannel(studentTimetableChannel);studentTimetableChannel=null;}
+      return false;
+    }
+  }
   function subscribeToClassTimetable(identity) {
     if(!supabaseClient)return;
     if(classTimetableChannel){supabaseClient.removeChannel(classTimetableChannel);classTimetableChannel=null;}
@@ -1396,6 +1535,7 @@ const STORAGE_KEYS = { posts: "sifs.beta.posts.v1", timetable: "sifs.beta.timeta
     saveValue(profileStorageKey(currentUser.id), profile);
     saveValue(accountTimetableKey, timetable);
     await loadClassTimetable();
+    await loadStudentTimetable();
     renderTimetable();renderUpcoming();
   }
   function subscribeToCloudPosts() {
@@ -1434,7 +1574,7 @@ const STORAGE_KEYS = { posts: "sifs.beta.posts.v1", timetable: "sifs.beta.timeta
   }
   function openAuthDialog() {
     if (!supabaseClient) { showToast("Supabase 라이브러리를 불러오지 못했습니다."); return; }
-    document.getElementById("modalRoot").innerHTML = '<div class="modal-backdrop" id="authBackdrop"><section class="modal"><h2>Google 계정으로 로그인</h2><p>Google 계정으로 로그인하면 게시글은 함께 공유되고, 프로필과 시간표는 내 계정에 저장됩니다.</p><button class="outline" id="googleSignIn" type="button" style="width:100%;height:42px;margin:8px 0 3px;font-weight:700">G　Google 계정으로 계속</button><p style="font-size:9px;margin-bottom:0">Google 로그인을 처음 사용하는 계정은 자동으로 등록됩니다.</p><div class="modal-actions"><button class="outline" id="closeAuth" type="button">닫기</button></div></section></div>';
+    document.getElementById("modalRoot").innerHTML = '<div class="modal-backdrop" id="authBackdrop"><section class="modal"><h2>Google 계정으로 로그인</h2><p>게시글은 공개 범위에 따라 공유됩니다. 흰칸 수업은 같은 반과, 선택과목은 학교·학년·학번이 같은 계정과 동기화됩니다.</p><button class="outline" id="googleSignIn" type="button" style="width:100%;height:42px;margin:8px 0 3px;font-weight:700">G　Google 계정으로 계속</button><p style="font-size:9px;margin-bottom:0">Google 로그인을 처음 사용하는 계정은 자동으로 등록됩니다.</p><div class="modal-actions"><button class="outline" id="closeAuth" type="button">닫기</button></div></section></div>';
     document.getElementById("closeAuth").addEventListener("click", () => document.getElementById("modalRoot").innerHTML="");
     document.getElementById("authBackdrop").addEventListener("click", event => { if (event.target.id === "authBackdrop") document.getElementById("modalRoot").innerHTML=""; });
     document.getElementById("googleSignIn").addEventListener("click", signInWithGoogle);
@@ -1512,6 +1652,9 @@ const STORAGE_KEYS = { posts: "sifs.beta.posts.v1", timetable: "sifs.beta.timeta
         timetable = normalizeTimetable(loadValue(timetableStorageKey(currentUser.id), DEFAULT_TIMETABLE));
         classTimetable = [];
         classTimetableReady = false;
+        studentTimetable = normalizeTimetable(loadValue(studentTimetableStorageKey(),[])).filter(item=>item.code);
+        studentTimetableReady = false;
+        if(studentTimetableChannel){supabaseClient.removeChannel(studentTimetableChannel);studentTimetableChannel=null;}
         posts = posts.filter(post => isSchoolPost(post) && audienceForPost(post).schoolName === profile.schoolName && !RETIRED_DEMO_POST_IDS.has(post.id));
         renderTimetable();
         window.setTimeout(() => finishCloudLogin(), 0);
@@ -1520,12 +1663,16 @@ const STORAGE_KEYS = { posts: "sifs.beta.posts.v1", timetable: "sifs.beta.timeta
         signedPostImageUrls.clear();
         if (realtimeChannel) { supabaseClient.removeChannel(realtimeChannel); realtimeChannel = null; }
         if (classTimetableChannel) { supabaseClient.removeChannel(classTimetableChannel); classTimetableChannel = null; }
+        if (studentTimetableChannel) { supabaseClient.removeChannel(studentTimetableChannel); studentTimetableChannel = null; }
         classTimetable = [];
         classTimetableReady = false;
+        studentTimetable = [];
+        studentTimetableReady = false;
         isModerator = false;
         updateModeratorNav();
         timetable = normalizeTimetable(loadValue(timetableStorageKey(), DEFAULT_TIMETABLE));
         profile = normalizeProfile(loadValue(profileStorageKey(), {name:"학생", studentId:"", schoolName:DEFAULT_SCHOOL_NAME, grade:"", className:""}));
+        studentTimetable = normalizeTimetable(loadValue(studentTimetableStorageKey(),[])).filter(item=>item.code);
         const savedPublicPosts = loadValue(STORAGE_KEYS.posts, DEFAULT_POSTS).filter(post => isSchoolPost(post) && audienceForPost(post).schoolName === profile.schoolName && !RETIRED_DEMO_POST_IDS.has(post.id));
         const schoolDefaults = DEFAULT_POSTS.filter(post => audienceForPost(post).schoolName === profile.schoolName);
         posts = mergePostLists(schoolDefaults, savedPublicPosts);
