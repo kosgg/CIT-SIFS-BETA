@@ -45,6 +45,24 @@ create table if not exists public.student_timetable_slots (
   primary key (school_name, grade, student_id, day, period)
 );
 
+-- One personal subject name per fixed F-J code for second-grade students.
+create table if not exists public.student_elective_subjects (
+  school_name text not null,
+  grade text not null check (grade = '2학년'),
+  student_id text not null check (length(btrim(student_id)) between 1 and 20),
+  code text not null check (code in ('F','G','H','I','J')),
+  subject text check (subject is null or length(btrim(subject)) between 1 and 24),
+  updated_at timestamptz not null default now(),
+  primary key (school_name, grade, student_id, code)
+);
+
+-- NULL is a tombstone so a deleted subject cannot be restored by an old account cache.
+alter table public.student_elective_subjects alter column subject drop not null;
+alter table public.student_elective_subjects drop constraint if exists student_elective_subjects_subject_check;
+alter table public.student_elective_subjects
+  add constraint student_elective_subjects_subject_check
+  check (subject is null or length(btrim(subject)) between 1 and 24);
+
 -- Audience and moderation metadata are separate from the display JSON so RLS can enforce them.
 alter table public.posts add column if not exists audience_type text not null default 'school';
 alter table public.posts add column if not exists target_school text not null default '서현고등학교';
@@ -176,6 +194,16 @@ begin
           and s.school_name = p_target_school
           and s.subject = p_target_subject
       )
+      or exists (
+        select 1
+        from public.student_elective_subjects s
+        join public.profiles p on p.user_id = auth.uid()
+        where coalesce(nullif(btrim(p.profile->>'schoolName'), ''), '서현고등학교') = p_target_school
+          and p.profile->>'grade' = s.grade
+          and nullif(btrim(p.profile->>'studentId'), '') = s.student_id
+          and s.school_name = p_target_school
+          and s.subject = p_target_subject
+      )
     );
   end if;
   return false;
@@ -261,6 +289,7 @@ alter table public.profiles enable row level security;
 alter table public.timetables enable row level security;
 alter table public.class_timetable_slots enable row level security;
 alter table public.student_timetable_slots enable row level security;
+alter table public.student_elective_subjects enable row level security;
 
 grant select on public.posts to anon, authenticated;
 grant insert, update, delete on public.posts to authenticated;
@@ -268,6 +297,7 @@ grant select, insert, update, delete on public.profiles to authenticated;
 grant select, insert, update, delete on public.timetables to authenticated;
 grant select, insert, update, delete on public.class_timetable_slots to authenticated;
 grant select, insert, update, delete on public.student_timetable_slots to authenticated;
+grant select, insert, update, delete on public.student_elective_subjects to authenticated;
 
 drop policy if exists "Anyone can read posts" on public.posts;
 drop policy if exists "Readers can access posts in their audience" on public.posts;
@@ -456,45 +486,78 @@ create policy "Matching students can delete shared electives"
   on public.student_timetable_slots for delete to authenticated
   using (public.sifs_student_timetable_matches(school_name, grade, student_id));
 
--- Import existing account-scoped selected courses. Legacy rows stay in public.timetables until
--- each account next signs in and syncs the new shared state.
-with parsed as (
+drop policy if exists "Matching students can read F-J elective subjects" on public.student_elective_subjects;
+create policy "Matching students can read F-J elective subjects"
+  on public.student_elective_subjects for select to authenticated
+  using (public.sifs_student_timetable_matches(school_name, grade, student_id));
+
+drop policy if exists "Matching students can create F-J elective subjects" on public.student_elective_subjects;
+create policy "Matching students can create F-J elective subjects"
+  on public.student_elective_subjects for insert to authenticated
+  with check (public.sifs_student_timetable_matches(school_name, grade, student_id));
+
+drop policy if exists "Matching students can update F-J elective subjects" on public.student_elective_subjects;
+create policy "Matching students can update F-J elective subjects"
+  on public.student_elective_subjects for update to authenticated
+  using (public.sifs_student_timetable_matches(school_name, grade, student_id))
+  with check (public.sifs_student_timetable_matches(school_name, grade, student_id));
+
+drop policy if exists "Matching students can delete F-J elective subjects" on public.student_elective_subjects;
+create policy "Matching students can delete F-J elective subjects"
+  on public.student_elective_subjects for delete to authenticated
+  using (public.sifs_student_timetable_matches(school_name, grade, student_id));
+
+-- Keep the newest subject for each F-J code in its own table. Legacy tables are not rewritten.
+with candidates as (
+  select school_name, grade, student_id, code, subject, updated_at,
+         3 as source_priority, null::text as account_id
+  from public.student_elective_subjects
+
+  union all
+
+  select school_name, grade, student_id, code, subject, updated_at,
+         2 as source_priority, null::text as account_id
+  from public.student_timetable_slots
+  where grade = '2학년' and code in ('F','G','H','I','J')
+
+  union all
+
   select
     coalesce(nullif(btrim(p.profile->>'schoolName'), ''), '서현고등학교') as school_name,
     p.profile->>'grade' as grade,
     btrim(p.profile->>'studentId') as student_id,
-    case when coalesce(item->>'day', '') ~ '^[1-5]$' then (item->>'day')::smallint end as day,
-    case when coalesce(item->>'period', '') ~ '^[1-7]$' then (item->>'period')::smallint end as period,
-    nullif(btrim(item->>'subject'), '') as subject,
     upper(btrim(item->>'code')) as code,
+    nullif(btrim(item->>'subject'), '') as subject,
     t.updated_at,
-    p.user_id
+    0 as source_priority,
+    p.user_id::text as account_id
   from public.profiles p
   join public.timetables t on t.user_id = p.user_id
   cross join lateral jsonb_array_elements(
     case when jsonb_typeof(t.items) = 'array' then t.items else '[]'::jsonb end
   ) as legacy(item)
 ), ranked as (
-  select parsed.*,
+  select candidates.*,
     row_number() over (
-      partition by school_name, grade, student_id, day, period
-      order by updated_at desc, user_id::text
-    ) as slot_rank
-  from parsed
-  where grade in ('1학년','2학년','3학년')
+      partition by school_name, grade, student_id, code
+      order by source_priority desc, updated_at desc, account_id desc nulls last, subject desc
+    ) as code_rank
+  from candidates
+  where grade = '2학년'
     and length(student_id) between 1 and 20
-    and day is not null
-    and period is not null
-    and subject is not null
-    and length(subject) <= 24
-    and code ~ '^[A-J]$'
+    and (subject is null or length(btrim(subject)) between 1 and 24)
+    and (source_priority = 3 or subject is not null)
+    and code in ('F','G','H','I','J')
+), selected as (
+  select school_name, grade, student_id, code, subject, updated_at
+  from ranked where code_rank = 1
 )
-insert into public.student_timetable_slots
-  (school_name, grade, student_id, day, period, subject, code)
-select school_name, grade, student_id, day, period, subject, code
-from ranked
-where slot_rank = 1
-on conflict (school_name, grade, student_id, day, period) do nothing;
+insert into public.student_elective_subjects
+  (school_name, grade, student_id, code, subject, updated_at)
+select school_name, grade, student_id, code, subject, updated_at
+from selected
+on conflict (school_name, grade, student_id, code) do update
+set subject=excluded.subject, updated_at=excluded.updated_at;
 
 -- Enable live updates when the Supabase Realtime publication is available.
 do $$
@@ -512,6 +575,13 @@ begin
        where pubname = 'supabase_realtime' and schemaname = 'public' and tablename = 'student_timetable_slots'
      ) then
     execute 'alter publication supabase_realtime add table public.student_timetable_slots';
+  end if;
+  if exists (select 1 from pg_publication where pubname = 'supabase_realtime')
+     and not exists (
+       select 1 from pg_publication_tables
+       where pubname = 'supabase_realtime' and schemaname = 'public' and tablename = 'student_elective_subjects'
+     ) then
+    execute 'alter publication supabase_realtime add table public.student_elective_subjects';
   end if;
 end;
 $$;
